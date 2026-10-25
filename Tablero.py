@@ -21,10 +21,10 @@ st.set_page_config(
 # =========================================================================
 CAFE = "#3B2108"        # texto café oscuro de alto contraste
 CREMA = "#F7F4EA"       # fondo general
-AMARILLO = "#F4C430"    # barra lateral
-CARD_BG = "#FFF1B0"     # card desplegable (amarillo más claro)
-BOTON = "#FFA700"       # amarillo cromo intenso para los botones
-BOTON_HOVER = "#FFC247"
+AMARILLO = "#E9C46A"    # barra lateral (amarillo más suave)
+CARD_BG = "#FBEFC4"     # card desplegable (amarillo más claro)
+BOTON = "#F0B03C"       # amarillo cromo suavizado para los botones
+BOTON_HOVER = "#F7C867"
 
 COLORES_TIZA = {
     "Azul Ultramar": "#0047AB",
@@ -58,9 +58,9 @@ GROSORES = {
 }
 
 TAMANOS = {
-    "Apaisado (620×400)": (620, 400),
+    "Ancho (720×400)": (720, 400),
+    "Alargado (740×320)": (740, 320),
     "Cuadrado (460×460)": (460, 460),
-    "Alargado (640×320)": (640, 320),
 }
 
 TEMAS = {
@@ -111,7 +111,7 @@ defaults = {
     "color": "#2D2A26",
     "herramienta": "freedraw",
     "grosor": 5,
-    "tamano": "Apaisado (620×400)",
+    "tamano": "Ancho (720×400)",
     "tema": "☀️ Playero",
     "guia": "Renglones de Cuaderno",
     "canvas_v": 0,               # sube cuando se limpia el lienzo
@@ -166,7 +166,7 @@ PRIMARY = 'button[kind="primary"], button[data-testid="stBaseButton-primary"]'
 st.markdown(
     f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Caveat:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Caveat:wght@600;700&family=Great+Vibes&family=Dancing+Script:wght@600;700&display=swap');
 
 /* ---------- Fondo general crema ---------- */
 .stApp {{
@@ -186,9 +186,9 @@ st.markdown(
 
 /* ---------- Barra lateral amarilla y ANCHA ---------- */
 [data-testid="stSidebar"][aria-expanded="true"] {{
-    width: 47vw !important;
-    min-width: 47vw !important;
-    max-width: 47vw !important;
+    width: 42vw !important;
+    min-width: 42vw !important;
+    max-width: 42vw !important;
 }}
 [data-testid="stSidebar"][aria-expanded="true"] > div:first-child {{
     width: 100% !important;
@@ -308,8 +308,30 @@ st.markdown(
     text-align: center;
 }}
 .art-hero h1 {{
-    margin: 0; font-size: 2.6rem; font-weight: 700; letter-spacing: 1px;
-    color: #FFC247; font-family: 'Fredoka', sans-serif;
+    margin: 0;
+    padding: .05em .3em .15em .3em;
+    font-family: 'Great Vibes', 'Dancing Script', cursive;
+    font-weight: 400;
+    font-size: 4.6rem;
+    line-height: 1.15;
+    letter-spacing: 1px;
+    display: inline-block;
+    background: linear-gradient(90deg,
+        #F6D365, #FDA085, #F78FB3, #7FDBDA, #A8E6A1, #F6D365);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: titleflow 7s linear infinite, titleblur 4.5s ease-in-out infinite;
+}}
+@keyframes titleflow {{
+    0%   {{ background-position: 0% 50%; }}
+    100% {{ background-position: 300% 50%; }}
+}}
+@keyframes titleblur {{
+    0%, 100% {{ filter: blur(0px) drop-shadow(0 0 6px rgba(246,211,101,.35)); }}
+    50%      {{ filter: blur(.7px) drop-shadow(0 0 18px rgba(247,143,179,.65)); }}
 }}
 .art-hero p {{
     margin: 6px 0 0 0; color: #FFF8E1; font-size: 1.6rem; line-height: 1.1;
@@ -317,14 +339,17 @@ st.markdown(
 }}
 
 /* ---------- Canvas ---------- */
-.canvas-card {{
+.st-key-canvas_card {{
     background: #FFFDF7;
     border: 3px solid #1F1308;
     border-radius: 16px;
     padding: 16px;
     box-shadow: 8px 8px 0 #1F1308;
+    width: fit-content !important;
     max-width: 100%;
-    margin: 0 auto;
+    margin-left: auto;
+    margin-right: auto;
+    align-items: center;
 }}
 .stMain iframe {{ display: block; margin: 0 auto; max-width: 100%; }}
 
@@ -534,7 +559,7 @@ with st.sidebar:
 st.markdown(
     """
     <div class="art-hero">
-        <h1>🎨 MI PIZARRA DE PRÁCTICA</h1>
+        <h1>Mi Pizarra de Práctica</h1>
         <p>Escribe números, letras y repasa caligrafía. Personaliza todo desde la barra amarilla.</p>
     </div>
     """,
@@ -575,8 +600,7 @@ bg_image = crear_fondo(canvas_width, canvas_height, tema_actual["bg"], st.sessio
 # =========================================================================
 # LAYOUT PRINCIPAL
 # =========================================================================
-if True:  # lienzo a todo el ancho del área principal
-    st.markdown('<div class="canvas-card">', unsafe_allow_html=True)
+with st.container(key="canvas_card"):
 
     canvas_result = st_canvas(
         fill_color="rgba(244, 196, 48, 0.25)",
@@ -628,5 +652,3 @@ if True:  # lienzo a todo el ancho del área principal
             )
         else:
             st.button("💾 Guardar Obra", disabled=True, use_container_width=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)
