@@ -6,279 +6,327 @@ from streamlit_drawable_canvas import st_canvas
 
 # Configuración de página
 st.set_page_config(
-    page_title="Mi Cuaderno Interactivo",
+    page_title="Studio Gráfico | Cuaderno Interactivo",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# Estilos CSS avanzados: Fondo crema, barra amarilla cromo, botones cuadrados iluminados y stickers interactivos
+# Estilos CSS: Estética de Diseñador Gráfico, Crema y Amarillo Cromo con Sombras Sólidas
 st.markdown(
     """
     <style>
-    /* Fondo general de la interfaz en color crema cálido */
+    /* Fondo general de la interfaz en crema cálido */
     .stApp {
         background-color: #F7F4EA;
-        color: #2D2A26;
+        color: #26221D;
         font-family: 'Inter', -apple-system, sans-serif;
     }
     
-    /* Barra lateral con color amarillo cromo elegante */
+    /* Barra lateral en Amarillo Cromo */
     div[data-testid="stSidebar"] {
-        background-color: #F4D03F !important;
-        border-right: 2px solid #D4AC0D;
-        padding-top: 10px;
+        background-color: #F4C430 !important;
+        border-right: 3px solid #26221D;
+        padding: 1rem 0.7rem;
     }
-    
-    /* Encabezado */
-    .notebook-header {
-        background: linear-gradient(135deg, #2C3E50 0%, #1A252F 100%);
-        border-left: 8px solid #E74C3C;
-        padding: 20px 25px;
-        border-radius: 12px;
-        margin-bottom: 20px;
-        box-shadow: 0 6px 15px rgba(0,0,0,0.08);
-        color: white;
+    div[data-testid="stSidebar"] * {
+        color: #26221D !important;
     }
-    .notebook-header h1 {
+
+    /* Hero / Portada estilo portafolio interactivo */
+    .designer-hero {
+        background: linear-gradient(135deg, #26221D 0%, #110F0D 100%);
+        color: #F7F4EA;
+        padding: 24px 32px;
+        border-radius: 16px;
+        box-shadow: 6px 6px 0px #F4C430;
+        margin-bottom: 24px;
+        border: 2px solid #26221D;
+    }
+    .designer-hero h1 {
         margin: 0;
-        font-size: 1.7rem;
-        font-weight: 800;
+        font-size: 2rem;
+        font-weight: 900;
+        letter-spacing: -0.5px;
     }
-    .notebook-header p {
-        margin: 5px 0 0 0;
-        color: #BDC3C7;
-        font-size: 0.9rem;
+    .designer-hero p {
+        margin: 8px 0 0 0;
+        color: #D4CDC2;
+        font-size: 0.98rem;
     }
 
-    /* Contenedor del Cuaderno */
-    .notebook-container {
+    /* Contenedor principal del cuaderno */
+    .notebook-card {
         background: #FFFFFF;
-        border: 2px solid #D6D0C4;
-        border-radius: 14px;
-        padding: 20px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        border: 3px solid #26221D;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 8px 8px 0px #26221D;
     }
 
-    /* Estilo de los Stickers interactivos en la barra lateral derecha */
+    /* Tarjetas de Stickers Interactivos */
     .sticker-card {
         background: #FFFFFF;
-        border: 2px solid #E0DCD0;
-        border-radius: 10px;
-        padding: 10px;
-        margin-bottom: 8px;
+        border: 2px solid #26221D;
+        border-radius: 12px;
+        padding: 12px;
         text-align: center;
-        font-weight: 700;
-        box-shadow: 2px 4px 10px rgba(0,0,0,0.05);
+        font-weight: 800;
+        box-shadow: 4px 4px 0px #26221D;
         cursor: pointer;
+        transition: all 0.2s ease;
+        margin-bottom: 10px;
+    }
+    .sticker-card:hover {
+        background: #FFF9C4;
+        transform: translate(-2px, -2px);
+        box-shadow: 6px 6px 0px #26221D;
+    }
+
+    /* Botones de acción principales */
+    .stButton > button {
+        background: #26221D !important;
+        color: #F7F4EA !important;
+        border: 2px solid #26221D !important;
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+        box-shadow: 3px 3px 0px #888 !important;
+        transition: all 0.1s ease !important;
+    }
+    .stButton > button:hover {
+        background: #F4C430 !important;
+        color: #26221D !important;
+        transform: translate(-1px, -1px);
+        box-shadow: 4px 4px 0px #26221D !important;
     }
     </style>
 """,
     unsafe_allow_html=True,
 )
 
-# Inicializar estados de la sesión para las secciones y la temática de stickers
-if "seccion_activa" not in st.session_state:
-  st.session_state.seccion_activa = "Temática"
+# Inicializar estados de la sesión
+if "active_section" not in st.session_state:
+  st.session_state.active_section = "🎨 Colores"
 
-if "sticker_tematica" not in st.session_state:
-  st.session_state.sticker_tematica = "☀️ Playero (Solecitos)"
+if "current_theme" not in st.session_state:
+  st.session_state.current_theme = "☀️ Playero"
 
-# Portada / Cabecera
+if "selected_color" not in st.session_state:
+  st.session_state.selected_color = "#26221D"
+
+# Cabecera / Portada Estilo Diseñador
 st.markdown(
     """
-    <div class="notebook-header">
-        <h1>📖 Cuaderno Interactivo Personalizable</h1>
-        <p>Elige tus herramientas, cambia de temática con los stickers y diseña tu espacio.</p>
+    <div class="designer-hero">
+        <h1>✨ STUDIO GRÁFICO INTERACTIVO</h1>
+        <p>Cuaderno de autor personalizable: experimenta con paletas, disposiciones, guías y stickers temáticos vivos.</p>
     </div>
 """,
     unsafe_allow_html=True,
 )
 
 # =========================================================================
-# BARRA LATERAL: Botones cuadrados con iluminación/sombra y grises
+# BARRA LATERAL (Amarillo Cromo): Botones cuadrados modernos y modulares
 # =========================================================================
 with st.sidebar:
-  st.markdown("### 🎛️ Panel de Control")
   st.markdown(
-      "<p style='font-size:0.85rem; color:#5D4037;'>Selecciona un apartado:</p>",
+      "<h3 style='margin-bottom:12px; font-weight:900;'>🎛️ MÓDULOS DE"
+      " DISEÑO</h3>",
+      unsafe_allow_html=True,
+  )
+  st.markdown(
+      "<p style='font-size:0.85rem; font-weight:600;'>Selecciona un apartado"
+      " para desplegar:</p>",
       unsafe_allow_html=True,
   )
 
-  # Creamos una botonera cuadrada distribuida en columnas para simular opciones independientes
-  b_col1, b_col2 = st.columns(2)
+  sections = [
+      ("🎨 Colores", "Paleta y tintas"),
+      ("📐 Disposición", "Herramientas y trazo"),
+      ("📏 Tamaño", "Dimensiones del lienzo"),
+      ("✨ Temática", "Estilos y stickers"),
+      ("📝 Renglones", "Patrones y guías"),
+  ]
 
-  sections = ["Temática", "Colores", "Disposición", "Tamaño", "Renglones"]
-  # Mapeo visual de los botones
-  for i, sec in enumerate(sections):
-    is_active = st.session_state.seccion_activa == sec
-    # Estilo dinámico: si está activo se ilumina (fondo oscuro con sombra), si no, gris suave
-    btn_label = f"📍 {sec}" if is_active else sec
-
-    # Distribución en 2 columnas
-    target_col = b_col1 if i % 2 == 0 else b_col2
-    with target_col:
-      if st.button(
-          btn_label, key=f"sec_btn_{sec}", use_container_width=True
-      ):
-        st.session_state.seccion_activa = sec
-        st.rerun()
+  # Botones interactivos de sección con iluminación si están activos
+  for sec_title, sec_desc in sections:
+    is_active = st.session_state.active_section == sec_title
+    # Estilo visual dinámico simulado con etiquetas
+    label = f"▶️ {sec_title}" if is_active else f"▫️ {sec_title}"
+    if st.button(label, key=f"sec_btn_{sec_title}", use_container_width=True):
+      st.session_state.active_section = sec_title
+      st.rerun()
 
   st.markdown("---")
 
   # =========================================================================
   # DESPLIEGUE DE SUBCATEGORÍAS SEGÚN EL BOTÓN SELECCIONADO
   # =========================================================================
-  activa = st.session_state.seccion_activa
+  active = st.session_state.active_section
+  st.markdown(
+      f"<h4 style='font-weight:800; border-bottom: 2px solid"
+      f" #26221D; padding-bottom:4px;'>Configurar: {active}</h4>",
+      unsafe_allow_html=True,
+  )
 
-  if activa == "Temática":
-    st.markdown("#### 🎨 Elige tu Sticker / Temática")
-    opciones_tematica = [
-        "☀️ Playero (Solecitos)",
-        "💖 Enamorados (Corazones)",
-        "🎵 Vinilos Vintage (Música)",
-    ]
-    st.session_state.sticker_tematica = st.radio(
-        "Temática activa:", opciones_tematica, label_visibility="collapsed"
-    )
-
-  elif activa == "Colores":
-    st.markdown("#### 🖍️ Paleta de Tinta")
-    color_opcion = st.selectbox(
-        "Elige color:",
-        [
-            "Blanco Tiza",
-            "Azul Océano",
-            "Rojo Pasión",
-            "Verde Esmeralda",
-            "Negro Carbón",
-        ],
-    )
-    colores_map = {
-        "Blanco Tiza": "#FFFFFF",
-        "Azul Océano": "#2980B9",
-        "Rojo Pasión": "#C0392B",
-        "Verde Esmeralda": "#27AE60",
-        "Negro Carbón": "#2C3E50",
+  if active == "🎨 Colores":
+    st.markdown("<p style='font-size:0.9rem;'>Elige un color rápido:</p>", unsafe_allow_html=True)
+    
+    # Cuadraditos de colores tipo paleta de diseño
+    c1, c2, c3 = st.columns(3)
+    palette = {
+        "Negro": "#26221D",
+        "Azul Klein": "#002FA7",
+        "Rojo Pop": "#FF3366",
+        "Verde Menta": "#2ECC71",
+        "Mostaza": "#D4AC0D",
+        "Morado": "#8E44AD"
     }
-    stroke_color = colores_map[color_opcion]
-    usar_libre = st.checkbox("Usar color personalizado")
-    if usar_libre:
-      stroke_color = st.color_picker("Elige color libre", "#2980B9")
+    
+    for name, hex_code in palette.items():
+      if st.button(name, key=f"color_swatch_{hex_code}", use_container_width=True):
+        st.session_state.selected_color = hex_code
 
-  elif activa == "Disposición":
-    st.markdown("#### 📐 Herramienta de Trazo")
+    st.markdown("<br><b>➕ Color Personalizado (Degradado/Libre):</b>", unsafe_allow_html=True)
+    st.session_state.selected_color = st.color_picker(
+        "Selector exacto", st.session_state.selected_color
+    )
+    stroke_color = st.session_state.selected_color
+
+  elif active == "📐 Disposición":
     drawing_mode = st.selectbox(
         "Herramienta:", ("freedraw", "line", "rect", "circle", "transform")
     )
-    stroke_width = st.slider("Grosor del trazo", 1, 35, 6)
+    stroke_width = st.slider("Grosor del trazo", 1, 40, 6)
 
-  elif activa == "Tamaño":
-    st.markdown("#### 📏 Dimensiones del Tablero")
+  elif active == "📏 Tamaño":
     formato_hoja = st.selectbox(
-        "Formato:",
+        "Formato de hoja:",
         [
-            "Apaisado Estándar (750x450)",
-            "Cuadrado Proporcional (500x500)",
-            "Amplio (900x500)",
+            "Apaisado Pro (750x450)",
+            "Cuadrado Cuaderno (550x550)",
+            "Amplio Estudiantil (900x500)",
         ],
     )
     if "750x450" in formato_hoja:
       canvas_width, canvas_height = 750, 450
-    elif "500x500" in formato_hoja:
-      canvas_width, canvas_height = 500, 500
+    elif "550x550" in formato_hoja:
+      canvas_width, canvas_height = 550, 550
     else:
       canvas_width, canvas_height = 900, 500
 
-  elif activa == "Renglones":
-    st.markdown("#### 📝 Patrón de Fondo")
+  elif active == "✨ Temática":
+    st.markdown("Elige tu sticker principal:")
+    if st.button("☀️ Sticker: Playero", use_container_width=True):
+      st.session_state.current_theme = "☀️ Playero"
+    if st.button("💖 Sticker: Enamorados", use_container_width=True):
+      st.session_state.current_theme = "💖 Enamorados"
+    if st.button("🎵 Sticker: Vinilos", use_container_width=True):
+      st.session_state.current_theme = "🎵 Vinilos"
+    if st.button("😊 Sticker: Carita Feliz", use_container_width=True):
+      st.session_state.current_theme = "😊 Carita Feliz"
+
+  elif active == "📝 Renglones":
     tipo_guia = st.selectbox(
-        "Guías:",
+        "Patrón de fondo:",
         [
             "Renglones de Cuaderno",
-            "Cuadrícula",
-            "Puntos (Bullet)",
-            "Sin Guías",
+            "Cuadrícula Geométrica",
+            "Puntos Minimalistas",
+            "Limpio sin guías",
         ],
     )
 
-# Valores predeterminados seguros por si el usuario cambia de sección
+# Valores predeterminados por seguridad
 if "stroke_color" not in locals():
-  stroke_color = "#2C3E50"
-if "stroke_width" not in locals():
-  stroke_width = 6
+  stroke_color = st.session_state.selected_color
 if "drawing_mode" not in locals():
   drawing_mode = "freedraw"
+if "stroke_width" not in locals():
+  stroke_width = 6
 if "canvas_width" not in locals():
   canvas_width, canvas_height = 750, 450
 if "tipo_guia" not in locals():
   tipo_guia = "Renglones de Cuaderno"
 
 # =========================================================================
-# CONFIGURACIÓN DE TEMÁTICAS SEGÚN EL STICKER SELECCIONADO
+# GESTIÓN DE TEMÁTICAS Y STICKERS VIVOS
 # =========================================================================
-tematica_actual = st.session_state.sticker_tematica
+current_theme = st.session_state.current_theme
 
-if "Playero" in tematica_actual:
-  default_bg = "#E0F7FA"  # Celeste suave estilo cielo/playa
-  sticker_display = "☀️ Solecito Playero Activo"
-elif "Enamorados" in tematica_actual:
-  default_bg = "#FCE4EC"  # Rosado romántico
-  sticker_display = "💖 Corazones San Valentín Activo"
-else:  # Vinilos Vintage
-  default_bg = "#EFEBE9"  # Papel envejecido / tonos café disco
-  sticker_display = "🎵 Vinilos Retro & Discos Activo"
+if "Playero" in current_theme:
+  default_bg = "#E0F7FA"
+  theme_label = "☀️ Vibe Playero & Solecitos"
+  emoji_dec = "🌴 ☀️ 🌊 🏖️"
+elif "Enamorados" in current_theme:
+  default_bg = "#FCE4EC"
+  theme_label = "💖 Vibe Enamorados & Corazones"
+  emoji_dec = "💖 💌 ✨ 🌹"
+elif "Vinilos" in current_theme:
+  default_bg = "#EFEBE9"
+  theme_label = "🎵 Vibe Vintage & Discos"
+  emoji_dec = "🎵 🎧 💿 🎷"
+else:
+  default_bg = "#FFFDE7"
+  theme_label = "😊 Vibe Pop & Caritas Felices"
+  emoji_dec = "😊 ⭐ 🚀 🎨"
 
 
-# Función generadora del fondo según la temática y guías
-def crear_fondo_tematico(width, height, bg_hex, guia, tematica):
+# Función generadora de fondos de autor con Pillow
+def crear_fondo_designer(width, height, bg_hex, guia, theme):
   bg_rgb = tuple(int(bg_hex.lstrip("#")[i : i + 2], 16) for i in (0, 2, 4))
   img = Image.new("RGB", (width, height), bg_rgb)
   draw = ImageDraw.Draw(img)
 
-  # Color de líneas y márgenes
-  guia_color = (200, 195, 185)
-  margen_color = (
-      (231, 76, 60)
-      if "Playero" in tematica
-      else ((194, 24, 91) if "Enamorados" in tematica else (93, 64, 55))
-  )
+  # Colores de margen y guías según temática
+  if "Playero" in theme:
+    margen_color = (0, 150, 136)
+    guia_color = (178, 235, 242)
+  elif "Enamorados" in theme:
+    margen_color = (216, 27, 96)
+    guia_color = (248, 187, 208)
+  elif "Vinilos" in theme:
+    margen_color = (121, 85, 72)
+    guia_color = (215, 204, 200)
+  else:
+    margen_color = (253, 216, 53)
+    guia_color = (255, 245, 157)
 
-  # Margen de cuaderno
-  draw.line([(55, 0), (55, height)], fill=margen_color, width=2)
+  # Margen de cuaderno elegante
+  draw.line([(55, 0), (55, height)], fill=margen_color, width=3)
 
   if guia == "Renglones de Cuaderno":
-    step = 40
+    step = 42
     for y in range(step, height, step):
       draw.line([(0, y), (width, y)], fill=guia_color, width=1)
-  elif guia == "Cuadrícula":
+  elif guia == "Cuadrícula Geométrica":
     step = 35
     for x in range(0, width, step):
       draw.line([(x, 0), (x, height)], fill=guia_color, width=1)
     for y in range(0, height, step):
       draw.line([(0, y), (width, y)], fill=guia_color, width=1)
-  elif guia == "Puntos (Bullet)":
+  elif guia == "Puntos Minimalistas":
     step = 30
     for x in range(30, width, step):
       for y in range(30, height, step):
-        draw.ellipse([(x - 1, y - 1), (x + 1, y + 1)], fill=guia_color)
+        draw.ellipse([(x - 1, y - 1), (x + 1, y + 1)], fill=margen_color)
 
   return img
 
 
-bg_image = crear_fondo_tematico(
-    canvas_width, canvas_height, default_bg, tipo_guia, tematica_actual
+bg_image = crear_fondo_designer(
+    canvas_width, canvas_height, default_bg, tipo_guia, current_theme
 )
 
 # =========================================================================
-# LAYOUT PRINCIPAL: Canvas + Stickers Interactivos a la Derecha
+# LAYOUT PRINCIPAL: Canvas + Stickers Interactivos a la Mano Derecha
 # =========================================================================
 col_main, col_stickers = st.columns([3, 1], gap="medium")
 
 with col_main:
-  st.markdown('<div class="notebook-container">', unsafe_allow_html=True)
+  st.markdown('<div class="notebook-card">', unsafe_allow_html=True)
 
   canvas_result = st_canvas(
-      fill_color="rgba(41, 128, 185, 0.15)",
+      fill_color="rgba(244, 196, 48, 0.2)",
       stroke_width=stroke_width,
       stroke_color=stroke_color,
       background_color=default_bg,
@@ -286,7 +334,7 @@ with col_main:
       height=canvas_height,
       width=canvas_width,
       drawing_mode=drawing_mode,
-      key=f"canvas_{canvas_width}_{canvas_height}_{tematica_actual}_{tipo_guia}",
+      key=f"canvas_designer_{canvas_width}_{canvas_height}_{current_theme}_{tipo_guia}",
   )
 
   st.markdown("<br>", unsafe_allow_html=True)
@@ -314,36 +362,53 @@ with col_main:
       byte_im = buf.getvalue()
 
       st.download_button(
-          label="💾 Guardar Página",
+          label="💾 Guardar Creación",
           data=byte_im,
-          file_name="apunte_tematico.png",
+          file_name="diseno_cuaderno.png",
           mime="image/png",
           use_container_width=True,
       )
     else:
-      st.button("💾 Guardar Página", disabled=True, use_container_width=True)
+      st.button("💾 Guardar Creación", disabled=True, use_container_width=True)
 
   st.markdown("</div>", unsafe_allow_html=True)
 
 with col_stickers:
-  st.markdown("### 🏷️ Stickers Temáticos")
   st.markdown(
-      "<p style='font-size:0.8rem; color:#5D4037;'>Selecciona un sticker para cambiar el ambiente del cuaderno:</p>",
+      "<h3 style='font-weight:900;'>📌 Stickers Vivos</h3>",
+      unsafe_allow_html=True,
+  )
+  st.markdown(
+      "<p style='font-size:0.85rem; color:#555;'>Toca un sticker para cambiar"
+      " el mood al instante:</p>",
       unsafe_allow_html=True,
   )
 
-  # Botones interactivos que actúan como stickers reales para cambiar la temática de golpe
-  if st.button("☀️ Sticker: Playero", use_container_width=True):
-    st.session_state.sticker_tematica = "☀️ Playero (Solecitos)"
+  # Botones interactivos que actúan como stickers de cuaderno reales
+  if st.button("☀️ Solecito Playero", use_container_width=True):
+    st.session_state.current_theme = "☀️ Playero"
     st.rerun()
 
-  if st.button("💖 Sticker: Enamorados", use_container_width=True):
-    st.session_state.sticker_tematica = "💖 Enamorados (Corazones)"
+  if st.button("💖 Corazón Enamorado", use_container_width=True):
+    st.session_state.current_theme = "💖 Enamorados"
     st.rerun()
 
-  if st.button("🎵 Sticker: Vinilos", use_container_width=True):
-    st.session_state.sticker_tematica = "🎵 Vinilos Vintage (Música)"
+  if st.button("🎵 Disco Vinilo Retro", use_container_width=True):
+    st.session_state.current_theme = "🎵 Vinilos"
+    st.rerun()
+
+  if st.button("😊 Carita Feliz Pop", use_container_width=True):
+    st.session_state.current_theme = "😊 Carita Feliz"
     st.rerun()
 
   st.markdown("---")
-  st.markdown(f"**Estado actual:**\n{sticker_display}")
+  st.markdown(
+      f"""
+    <div style="background: #FFFFFF; border: 2px solid #26221D; border-radius: 12px; padding: 14px; box-shadow: 4px 4px 0px #26221D; text-align: center;">
+        <p style="font-size:0.75rem; font-weight:700; margin:0; color:#777;">ESTADO TEMÁTICO</p>
+        <p style="font-size:0.95rem; font-weight:900; margin:5px 0 0 0; color:#26221D;">{theme_label}</p>
+        <p style="font-size:1.4rem; margin:8px 0 0 0;">{emoji_dec}</p>
+    </div>
+    """,
+      unsafe_allow_html=True,
+  )
