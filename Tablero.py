@@ -6,54 +6,51 @@ from streamlit_drawable_canvas import st_canvas
 
 # Configuración de página
 st.set_page_config(
-    page_title="Mi Cuaderno Personalizable",
+    page_title="Mi Cuaderno Interactivo",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# Estilos CSS: Estética de Cuaderno Escolar, Stickers y Tarjetas Visuales
+# Estilos CSS avanzados: Fondo crema, barra amarilla cromo, botones cuadrados iluminados y stickers interactivos
 st.markdown(
     """
     <style>
+    /* Fondo general de la interfaz en color crema cálido */
     .stApp {
-        background-color: #F3F0EA;
-        color: #2C2A29;
+        background-color: #F7F4EA;
+        color: #2D2A26;
         font-family: 'Inter', -apple-system, sans-serif;
     }
     
-    /* Cabecera estilo portada de cuaderno */
+    /* Barra lateral con color amarillo cromo elegante */
+    div[data-testid="stSidebar"] {
+        background-color: #F4D03F !important;
+        border-right: 2px solid #D4AC0D;
+        padding-top: 10px;
+    }
+    
+    /* Encabezado */
     .notebook-header {
         background: linear-gradient(135deg, #2C3E50 0%, #1A252F 100%);
         border-left: 8px solid #E74C3C;
-        padding: 22px 28px;
+        padding: 20px 25px;
         border-radius: 12px;
         margin-bottom: 20px;
-        box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.08);
         color: white;
     }
     .notebook-header h1 {
         margin: 0;
-        font-size: 1.8rem;
+        font-size: 1.7rem;
         font-weight: 800;
-        letter-spacing: -0.5px;
     }
     .notebook-header p {
         margin: 5px 0 0 0;
         color: #BDC3C7;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
     }
 
-    /* Tarjetas de opciones en barra lateral */
-    .sidebar-card {
-        background: #FFFFFF;
-        border: 1px solid #E0DCD0;
-        border-radius: 10px;
-        padding: 12px 14px;
-        margin-bottom: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-    }
-
-    /* Contenedor del Cuaderno / Pizarra */
+    /* Contenedor del Cuaderno */
     .notebook-container {
         background: #FFFFFF;
         border: 2px solid #D6D0C4;
@@ -62,206 +59,223 @@ st.markdown(
         box-shadow: 0 10px 25px rgba(0,0,0,0.05);
     }
 
-    /* Estilo de los Stickers decorativos laterales */
-    .sticker-container {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        padding-top: 10px;
-    }
-    .sticker-badge {
-        background: #FFF9E6;
-        border: 2px dashed #F1C40F;
-        padding: 10px 14px;
-        border-radius: 8px;
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: #7F6000;
-        transform: rotate(-1.5deg);
-        box-shadow: 2px 3px 8px rgba(0,0,0,0.06);
+    /* Estilo de los Stickers interactivos en la barra lateral derecha */
+    .sticker-card {
+        background: #FFFFFF;
+        border: 2px solid #E0DCD0;
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 8px;
         text-align: center;
-    }
-    .sticker-badge.blue {
-        background: #EBF5FB;
-        border-color: #3498DB;
-        color: #1B4F72;
-        transform: rotate(1deg);
-    }
-    .sticker-badge.pink {
-        background: #FADBD8;
-        border-color: #E74C3C;
-        color: #78281F;
-        transform: rotate(-1deg);
-    }
-    .sticker-badge.green {
-        background: #EAFAF1;
-        border-color: #27AE60;
-        color: #145A32;
-        transform: rotate(1.5deg);
-    }
-
-    div[data-testid="stSidebar"] {
-        background-color: #FAFAF7 !important;
-        border-right: 1px solid #E5E0D5;
-    }
-    
-    .stButton > button {
-        background: #2C3E50 !important;
-        color: white !important;
-        border-radius: 8px !important;
-        font-weight: 600 !important;
-        border: none !important;
+        font-weight: 700;
+        box-shadow: 2px 4px 10px rgba(0,0,0,0.05);
+        cursor: pointer;
     }
     </style>
 """,
     unsafe_allow_html=True,
 )
 
+# Inicializar estados de la sesión para las secciones y la temática de stickers
+if "seccion_activa" not in st.session_state:
+  st.session_state.seccion_activa = "Temática"
+
+if "sticker_tematica" not in st.session_state:
+  st.session_state.sticker_tematica = "☀️ Playero (Solecitos)"
+
 # Portada / Cabecera
 st.markdown(
     """
     <div class="notebook-header">
-        <h1>📖 Mi Cuaderno Personalizable</h1>
-        <p>Tu espacio escolar y creativo a medida: ajusta el papel, los colores de tiza y decora tu entorno.</p>
+        <h1>📖 Cuaderno Interactivo Personalizable</h1>
+        <p>Elige tus herramientas, cambia de temática con los stickers y diseña tu espacio.</p>
     </div>
 """,
     unsafe_allow_html=True,
 )
 
-# Barra lateral de configuración personalizada
+# =========================================================================
+# BARRA LATERAL: Botones cuadrados con iluminación/sombra y grises
+# =========================================================================
 with st.sidebar:
-  st.markdown("### 🛠️ Personalización")
-
-  st.markdown("---")
-  st.markdown("**1. Formato de Hoja (Dimensiones)**")
-  formato_hoja = st.radio(
-      "Selecciona el tamaño:",
-      (
-          "Apaisado Estándar (750x450)",
-          "Cuadrado Proporcional (500x500)",
-          "Formato Amplio (900x500)",
-      ),
-      label_visibility="collapsed",
+  st.markdown("### 🎛️ Panel de Control")
+  st.markdown(
+      "<p style='font-size:0.85rem; color:#5D4037;'>Selecciona un apartado:</p>",
+      unsafe_allow_html=True,
   )
 
-  if "750x450" in formato_hoja:
-    canvas_width, canvas_height = 750, 450
-  elif "500x500" in formato_hoja:
-    canvas_width, canvas_height = 500, 500
-  else:
-    canvas_width, canvas_height = 900, 500
+  # Creamos una botonera cuadrada distribuida en columnas para simular opciones independientes
+  b_col1, b_col2 = st.columns(2)
+
+  sections = ["Temática", "Colores", "Disposición", "Tamaño", "Renglones"]
+  # Mapeo visual de los botones
+  for i, sec in enumerate(sections):
+    is_active = st.session_state.seccion_activa == sec
+    # Estilo dinámico: si está activo se ilumina (fondo oscuro con sombra), si no, gris suave
+    btn_label = f"📍 {sec}" if is_active else sec
+
+    # Distribución en 2 columnas
+    target_col = b_col1 if i % 2 == 0 else b_col2
+    with target_col:
+      if st.button(
+          btn_label, key=f"sec_btn_{sec}", use_container_width=True
+      ):
+        st.session_state.seccion_activa = sec
+        st.rerun()
 
   st.markdown("---")
-  st.markdown("**2. Estilo de Papel Escolar (Fondo)**")
-  tipo_fondo = st.radio(
-      "Fondo de cuaderno:",
-      (
-          "Crema Papel Escolar",
-          "Verde Pizarra Clásica",
-          "Papel Kraft Reciclado",
-          "Blanco Limpio",
-      ),
-      label_visibility="collapsed",
-  )
 
-  if tipo_fondo == "Crema Papel Escolar":
-    default_bg = "#FBF8EF"
-    default_stroke = "#2C3E50"
-  elif tipo_fondo == "Verde Pizarra Clásica":
-    default_bg = "#1E3F20"
-    default_stroke = "#FFFFFF"
-  elif tipo_fondo == "Papel Kraft Reciclado":
-    default_bg = "#EEDCC5"
-    default_stroke = "#3D2314"
-  else:
-    default_bg = "#FFFFFF"
-    default_stroke = "#111827"
+  # =========================================================================
+  # DESPLIEGUE DE SUBCATEGORÍAS SEGÚN EL BOTÓN SELECCIONADO
+  # =========================================================================
+  activa = st.session_state.seccion_activa
 
-  st.markdown("---")
-  st.markdown("**3. Patrón de Guía / Líneas**")
-  tipo_guia = st.radio(
-      "Guías:", ("Renglones de Cuaderno", "Cuadrícula", "Puntos", "Ninguna"), label_visibility="collapsed"
-  )
+  if activa == "Temática":
+    st.markdown("#### 🎨 Elige tu Sticker / Temática")
+    opciones_tematica = [
+        "☀️ Playero (Solecitos)",
+        "💖 Enamorados (Corazones)",
+        "🎵 Vinilos Vintage (Música)",
+    ]
+    st.session_state.sticker_tematica = st.radio(
+        "Temática activa:", opciones_tematica, label_visibility="collapsed"
+    )
 
-  st.markdown("---")
-  st.markdown("**4. Herramienta y Tiza**")
-  drawing_mode = st.selectbox(
-      "Herramienta de trazo:", ("freedraw", "line", "rect", "circle", "transform")
-  )
-  stroke_width = st.slider("Grosor del lápiz / tiza", 1, 35, 6)
+  elif activa == "Colores":
+    st.markdown("#### 🖍️ Paleta de Tinta")
+    color_opcion = st.selectbox(
+        "Elige color:",
+        [
+            "Blanco Tiza",
+            "Azul Océano",
+            "Rojo Pasión",
+            "Verde Esmeralda",
+            "Negro Carbón",
+        ],
+    )
+    colores_map = {
+        "Blanco Tiza": "#FFFFFF",
+        "Azul Océano": "#2980B9",
+        "Rojo Pasión": "#C0392B",
+        "Verde Esmeralda": "#27AE60",
+        "Negro Carbón": "#2C3E50",
+    }
+    stroke_color = colores_map[color_opcion]
+    usar_libre = st.checkbox("Usar color personalizado")
+    if usar_libre:
+      stroke_color = st.color_picker("Elige color libre", "#2980B9")
 
-  # Paleta de colores estilo kit escolar
-  st.markdown("Palette de Tinta / Tiza:")
-  colores_opciones = {
-      "Blanco Tiza": "#FFFFFF",
-      "Azul Clásico": "#2980B9",
-      "Rojo Nota": "#C0392B",
-      "Verde Oscuro": "#196F3D",
-      "Amarillo Marcador": "#F39C12",
-      "Negro Carbón": "#2C3E50",
-  }
+  elif activa == "Disposición":
+    st.markdown("#### 📐 Herramienta de Trazo")
+    drawing_mode = st.selectbox(
+        "Herramienta:", ("freedraw", "line", "rect", "circle", "transform")
+    )
+    stroke_width = st.slider("Grosor del trazo", 1, 35, 6)
 
-  col_c1, col_c2, col_c3 = st.columns(3)
-  selected_color = default_stroke
-  # Selector rápido mediante colores
-  color_elegido = st.selectbox("Elige color rápido:", list(colores_opciones.keys()))
-  stroke_color = colores_opciones[color_elegido]
+  elif activa == "Tamaño":
+    st.markdown("#### 📏 Dimensiones del Tablero")
+    formato_hoja = st.selectbox(
+        "Formato:",
+        [
+            "Apaisado Estándar (750x450)",
+            "Cuadrado Proporcional (500x500)",
+            "Amplio (900x500)",
+        ],
+    )
+    if "750x450" in formato_hoja:
+      canvas_width, canvas_height = 750, 450
+    elif "500x500" in formato_hoja:
+      canvas_width, canvas_height = 500, 500
+    else:
+      canvas_width, canvas_height = 900, 500
 
-  # Opción extra de color personalizado con degradado/selector libre
-  usar_personalizado = st.checkbox("Usar selector de color libre")
-  if usar_personalizado:
-    stroke_color = st.color_picker("Elige tu color exacto", default_stroke)
+  elif activa == "Renglones":
+    st.markdown("#### 📝 Patrón de Fondo")
+    tipo_guia = st.selectbox(
+        "Guías:",
+        [
+            "Renglones de Cuaderno",
+            "Cuadrícula",
+            "Puntos (Bullet)",
+            "Sin Guías",
+        ],
+    )
+
+# Valores predeterminados seguros por si el usuario cambia de sección
+if "stroke_color" not in locals():
+  stroke_color = "#2C3E50"
+if "stroke_width" not in locals():
+  stroke_width = 6
+if "drawing_mode" not in locals():
+  drawing_mode = "freedraw"
+if "canvas_width" not in locals():
+  canvas_width, canvas_height = 750, 450
+if "tipo_guia" not in locals():
+  tipo_guia = "Renglones de Cuaderno"
+
+# =========================================================================
+# CONFIGURACIÓN DE TEMÁTICAS SEGÚN EL STICKER SELECCIONADO
+# =========================================================================
+tematica_actual = st.session_state.sticker_tematica
+
+if "Playero" in tematica_actual:
+  default_bg = "#E0F7FA"  # Celeste suave estilo cielo/playa
+  sticker_display = "☀️ Solecito Playero Activo"
+elif "Enamorados" in tematica_actual:
+  default_bg = "#FCE4EC"  # Rosado romántico
+  sticker_display = "💖 Corazones San Valentín Activo"
+else:  # Vinilos Vintage
+  default_bg = "#EFEBE9"  # Papel envejecido / tonos café disco
+  sticker_display = "🎵 Vinilos Retro & Discos Activo"
 
 
-# Función generadora de fondos de cuaderno con Pillow
-def crear_fondo_cuaderno(width, height, bg_hex, guia):
+# Función generadora del fondo según la temática y guías
+def crear_fondo_tematico(width, height, bg_hex, guia, tematica):
   bg_rgb = tuple(int(bg_hex.lstrip("#")[i : i + 2], 16) for i in (0, 2, 4))
   img = Image.new("RGB", (width, height), bg_rgb)
   draw = ImageDraw.Draw(img)
 
-  # Determinar color de guías según el fondo
-  luminance = 0.299 * bg_rgb[0] + 0.587 * bg_rgb[1] + 0.114 * bg_rgb[2]
-  if luminance < 100:  # Fondo oscuro (pizarra verde)
-    guia_color = (255, 255, 255, 45)
-    margen_color = (231, 76, 60, 150)
-  else:  # Fondo claro (papel)
-    guia_color = (200, 190, 175)
-    margen_color = (231, 76, 60, 100)
+  # Color de líneas y márgenes
+  guia_color = (200, 195, 185)
+  margen_color = (
+      (231, 76, 60)
+      if "Playero" in tematica
+      else ((194, 24, 91) if "Enamorados" in tematica else (93, 64, 55))
+  )
 
-  # Dibujar margen vertical estilo cuaderno escolar a la izquierda
-  draw.line([(55, 0), (55, height)], fill=margen_color[:3], width=2)
+  # Margen de cuaderno
+  draw.line([(55, 0), (55, height)], fill=margen_color, width=2)
 
   if guia == "Renglones de Cuaderno":
     step = 40
     for y in range(step, height, step):
-      draw.line([(0, y), (width, y)], fill=guia_color[:3], width=1)
-
+      draw.line([(0, y), (width, y)], fill=guia_color, width=1)
   elif guia == "Cuadrícula":
     step = 35
     for x in range(0, width, step):
-      draw.line([(x, 0), (x, height)], fill=guia_color[:3], width=1)
+      draw.line([(x, 0), (x, height)], fill=guia_color, width=1)
     for y in range(0, height, step):
-      draw.line([(0, y), (width, y)], fill=guia_color[:3], width=1)
-
-  elif guia == "Puntos":
+      draw.line([(0, y), (width, y)], fill=guia_color, width=1)
+  elif guia == "Puntos (Bullet)":
     step = 30
     for x in range(30, width, step):
       for y in range(30, height, step):
-        draw.ellipse([(x - 1, y - 1), (x + 1, y + 1)], fill=guia_color[:3])
+        draw.ellipse([(x - 1, y - 1), (x + 1, y + 1)], fill=guia_color)
 
   return img
 
 
-# Generar imagen de fondo
-bg_image = crear_fondo_cuaderno(canvas_width, canvas_height, default_bg, tipo_guia)
+bg_image = crear_fondo_tematico(
+    canvas_width, canvas_height, default_bg, tipo_guia, tematica_actual
+)
 
-# Layout principal: Dividido entre el tablero central y el panel de stickers a la derecha
+# =========================================================================
+# LAYOUT PRINCIPAL: Canvas + Stickers Interactivos a la Derecha
+# =========================================================================
 col_main, col_stickers = st.columns([3, 1], gap="medium")
 
 with col_main:
-  st.markdown(
-      '<div class="notebook-container">', unsafe_allow_html=True
-  )
+  st.markdown('<div class="notebook-container">', unsafe_allow_html=True)
 
   canvas_result = st_canvas(
       fill_color="rgba(41, 128, 185, 0.15)",
@@ -272,7 +286,7 @@ with col_main:
       height=canvas_height,
       width=canvas_width,
       drawing_mode=drawing_mode,
-      key=f"canvas_cuaderno_{canvas_width}_{canvas_height}_{tipo_fondo}_{tipo_guia}_{default_bg}",
+      key=f"canvas_{canvas_width}_{canvas_height}_{tematica_actual}_{tipo_guia}",
   )
 
   st.markdown("<br>", unsafe_allow_html=True)
@@ -302,7 +316,7 @@ with col_main:
       st.download_button(
           label="💾 Guardar Página",
           data=byte_im,
-          file_name="mi_apunte_cuaderno.png",
+          file_name="apunte_tematico.png",
           mime="image/png",
           use_container_width=True,
       )
@@ -312,16 +326,24 @@ with col_main:
   st.markdown("</div>", unsafe_allow_html=True)
 
 with col_stickers:
-  st.markdown("### 📌 Mis Stickers")
+  st.markdown("### 🏷️ Stickers Temáticos")
   st.markdown(
-      """
-    <div class="sticker-container">
-        <div class="sticker-badge">⭐ ¡Excelente Apunte!</div>
-        <div class="sticker-badge blue">📌 Recordatorio Clave</div>
-        <div class="sticker-badge pink">💡 Idea Brillante</div>
-        <div class="sticker-badge green">🚀 Focus Mode ON</div>
-        <div class="sticker-badge">✨ Estilo Personal</div>
-    </div>
-    """,
+      "<p style='font-size:0.8rem; color:#5D4037;'>Selecciona un sticker para cambiar el ambiente del cuaderno:</p>",
       unsafe_allow_html=True,
   )
+
+  # Botones interactivos que actúan como stickers reales para cambiar la temática de golpe
+  if st.button("☀️ Sticker: Playero", use_container_width=True):
+    st.session_state.sticker_tematica = "☀️ Playero (Solecitos)"
+    st.rerun()
+
+  if st.button("💖 Sticker: Enamorados", use_container_width=True):
+    st.session_state.sticker_tematica = "💖 Enamorados (Corazones)"
+    st.rerun()
+
+  if st.button("🎵 Sticker: Vinilos", use_container_width=True):
+    st.session_state.sticker_tematica = "🎵 Vinilos Vintage (Música)"
+    st.rerun()
+
+  st.markdown("---")
+  st.markdown(f"**Estado actual:**\n{sticker_display}")
