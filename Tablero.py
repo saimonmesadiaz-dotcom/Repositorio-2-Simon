@@ -4,249 +4,285 @@ from PIL import Image, ImageDraw, ImageFont
 import streamlit as st
 from streamlit_drawable_canvas import st_canvas
 
-# Configuración de página (mantiene el ícono nativo de Streamlit)
+# Configuración de página
 st.set_page_config(
-    page_title="Pizarra de Estudio Pro", layout="wide", initial_sidebar_state="expanded"
+    page_title="Mi Cuaderno Personalizable",
+    layout="wide",
+    initial_sidebar_state="expanded",
 )
 
-# Estilos CSS personalizados: Estética Minimalista / Estudio Pro (Tonos claros, cálidos y focus)
+# Estilos CSS: Estética de Cuaderno Escolar, Stickers y Tarjetas Visuales
 st.markdown(
     """
     <style>
-    /* Fondo general estilo papel de estudio limpio */
     .stApp {
-        background-color: #F8F9FA;
-        color: #1A1D20;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background-color: #F3F0EA;
+        color: #2C2A29;
+        font-family: 'Inter', -apple-system, sans-serif;
     }
     
-    /* Header Principal */
-    .study-header {
-        background: #FFFFFF;
-        border: 1px solid #E5E7EB;
-        padding: 24px;
-        border-radius: 14px;
-        margin-bottom: 24px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    /* Cabecera estilo portada de cuaderno */
+    .notebook-header {
+        background: linear-gradient(135deg, #2C3E50 0%, #1A252F 100%);
+        border-left: 8px solid #E74C3C;
+        padding: 22px 28px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        color: white;
     }
-    .study-header h1 {
-        color: #111827;
+    .notebook-header h1 {
+        margin: 0;
+        font-size: 1.8rem;
         font-weight: 800;
         letter-spacing: -0.5px;
-        margin-bottom: 6px;
-        font-size: 1.8rem;
     }
-    .study-header p {
-        color: #4B5563;
+    .notebook-header p {
+        margin: 5px 0 0 0;
+        color: #BDC3C7;
         font-size: 0.95rem;
-        margin: 0;
     }
 
-    /* Cards de Perfiles de Estudio */
-    .study-card {
+    /* Tarjetas de opciones en barra lateral */
+    .sidebar-card {
         background: #FFFFFF;
-        border: 1px solid #E5E7EB;
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 12px;
-        transition: all 0.2s ease-in-out;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        border: 1px solid #E0DCD0;
+        border-radius: 10px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
     }
-    .study-card:hover {
-        border-color: #3B82F6;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+
+    /* Contenedor del Cuaderno / Pizarra */
+    .notebook-container {
+        background: #FFFFFF;
+        border: 2px solid #D6D0C4;
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
     }
-    .study-card-title {
-        font-weight: 700;
-        color: #1F2937;
-        font-size: 0.95rem;
+
+    /* Estilo de los Stickers decorativos laterales */
+    .sticker-container {
         display: flex;
-        align-items: center;
-        gap: 8px;
+        flex-direction: column;
+        gap: 12px;
+        padding-top: 10px;
     }
-    .study-card-desc {
-        color: #6B7280;
-        font-size: 0.83rem;
-        margin-top: 4px;
+    .sticker-badge {
+        background: #FFF9E6;
+        border: 2px dashed #F1C40F;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #7F6000;
+        transform: rotate(-1.5deg);
+        box-shadow: 2px 3px 8px rgba(0,0,0,0.06);
+        text-align: center;
+    }
+    .sticker-badge.blue {
+        background: #EBF5FB;
+        border-color: #3498DB;
+        color: #1B4F72;
+        transform: rotate(1deg);
+    }
+    .sticker-badge.pink {
+        background: #FADBD8;
+        border-color: #E74C3C;
+        color: #78281F;
+        transform: rotate(-1deg);
+    }
+    .sticker-badge.green {
+        background: #EAFAF1;
+        border-color: #27AE60;
+        color: #145A32;
+        transform: rotate(1.5deg);
     }
 
-    /* Estilo de la barra lateral */
     div[data-testid="stSidebar"] {
-        background-color: #FFFFFF !important;
-        border-right: 1px solid #E5E7EB;
+        background-color: #FAFAF7 !important;
+        border-right: 1px solid #E5E0D5;
     }
-
-    /* Botones de acción limpios */
+    
     .stButton > button {
-        background: #2563EB !important;
-        color: #FFFFFF !important;
-        border: none !important;
+        background: #2C3E50 !important;
+        color: white !important;
         border-radius: 8px !important;
-        padding: 10px 20px !important;
         font-weight: 600 !important;
-        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2) !important;
-        transition: all 0.2s ease !important;
-    }
-    .stButton > button:hover {
-        background: #1D4ED8 !important;
-        transform: translateY(-1px) !important;
+        border: none !important;
     }
     </style>
 """,
     unsafe_allow_html=True,
 )
 
-# Encabezado limpio
+# Portada / Cabecera
 st.markdown(
     """
-    <div class="study-header">
-        <h1>📚 Pizarra de Estudio Pro</h1>
-        <p>Diseñada para esquematizar conceptos, tomar apuntes visuales y estructurar tus sesiones de aprendizaje.</p>
+    <div class="notebook-header">
+        <h1>📖 Mi Cuaderno Personalizable</h1>
+        <p>Tu espacio escolar y creativo a medida: ajusta el papel, los colores de tiza y decora tu entorno.</p>
     </div>
 """,
     unsafe_allow_html=True,
 )
 
-# Sidebar de configuración
+# Barra lateral de configuración personalizada
 with st.sidebar:
-  st.subheader("🎯 Enfoque de Estudio")
+  st.markdown("### 🛠️ Personalización")
 
-  perfil_estudio = st.selectbox(
-      "Modo de Pizarra:",
+  st.markdown("---")
+  st.markdown("**1. Formato de Hoja (Dimensiones)**")
+  formato_hoja = st.radio(
+      "Selecciona el tamaño:",
       (
-          "Apunte Libre (Papel Limpio)",
-          "Mapa Mental / Conceptual",
-          "Resolución de Fórmulas",
-          "Planificador / Kanban",
+          "Apaisado Estándar (750x450)",
+          "Cuadrado Proporcional (500x500)",
+          "Formato Amplio (900x500)",
       ),
+      label_visibility="collapsed",
   )
 
-  if perfil_estudio == "Apunte Libre (Papel Limpio)":
-    default_bg = "#FFFFFF"
-    default_stroke = "#1E293B"
-    default_width = 4
-  elif perfil_estudio == "Mapa Mental / Conceptual":
-    default_bg = "#F8FAFC"
-    default_stroke = "#3B82F6"
-    default_width = 3
-  elif perfil_estudio == "Resolución de Fórmulas":
-    default_bg = "#FFFBEB"  # Tono papel marfil suave
-    default_stroke = "#B45309"
-    default_width = 3
-  elif perfil_estudio == "Planificador / Kanban":
-    default_bg = "#F1F5F9"
-    default_stroke = "#0F172A"
-    default_width = 4
+  if "750x450" in formato_hoja:
+    canvas_width, canvas_height = 750, 450
+  elif "500x500" in formato_hoja:
+    canvas_width, canvas_height = 500, 500
+  else:
+    canvas_width, canvas_height = 900, 500
+
+  st.markdown("---")
+  st.markdown("**2. Estilo de Papel Escolar (Fondo)**")
+  tipo_fondo = st.radio(
+      "Fondo de cuaderno:",
+      (
+          "Crema Papel Escolar",
+          "Verde Pizarra Clásica",
+          "Papel Kraft Reciclado",
+          "Blanco Limpio",
+      ),
+      label_visibility="collapsed",
+  )
+
+  if tipo_fondo == "Crema Papel Escolar":
+    default_bg = "#FBF8EF"
+    default_stroke = "#2C3E50"
+  elif tipo_fondo == "Verde Pizarra Clásica":
+    default_bg = "#1E3F20"
+    default_stroke = "#FFFFFF"
+  elif tipo_fondo == "Papel Kraft Reciclado":
+    default_bg = "#EEDCC5"
+    default_stroke = "#3D2314"
   else:
     default_bg = "#FFFFFF"
-    default_stroke = "#000000"
-    default_width = 4
+    default_stroke = "#111827"
 
   st.markdown("---")
-  st.subheader("📐 Dimensiones")
-  canvas_width = st.slider("Ancho", 400, 1000, 750, 50)
-  canvas_height = st.slider("Alto", 300, 700, 480, 50)
-
-  st.markdown("---")
-  st.subheader("✏️ Herramientas de Trazado")
-  drawing_mode = st.selectbox(
-      "Herramienta:", ("freedraw", "line", "rect", "circle", "transform")
+  st.markdown("**3. Patrón de Guía / Líneas**")
+  tipo_guia = st.radio(
+      "Guías:", ("Renglones de Cuaderno", "Cuadrícula", "Puntos", "Ninguna"), label_visibility="collapsed"
   )
-  stroke_width = st.slider("Grosor del lápiz", 1, 30, default_width)
 
-  # Paleta de colores estilo 'Highlighter & Pen' académico
-  colores_estudio = {
-      "Negro Académico": "#1E293B",
-      "Azul Apunte": "#2563EB",
-      "Rojo Destacado": "#DC2626",
-      "Verde Esquema": "#16A34A",
-      "Morado Conceptual": "#7C3AED",
-      "Gris Sutil": "#94A3B8",
-      "Personalizado": "custom",
+  st.markdown("---")
+  st.markdown("**4. Herramienta y Tiza**")
+  drawing_mode = st.selectbox(
+      "Herramienta de trazo:", ("freedraw", "line", "rect", "circle", "transform")
+  )
+  stroke_width = st.slider("Grosor del lápiz / tiza", 1, 35, 6)
+
+  # Paleta de colores estilo kit escolar
+  st.markdown("Palette de Tinta / Tiza:")
+  colores_opciones = {
+      "Blanco Tiza": "#FFFFFF",
+      "Azul Clásico": "#2980B9",
+      "Rojo Nota": "#C0392B",
+      "Verde Oscuro": "#196F3D",
+      "Amarillo Marcador": "#F39C12",
+      "Negro Carbón": "#2C3E50",
   }
 
-  nombre_color = st.selectbox("Color de tinta:", list(colores_estudio.keys()))
-  if nombre_color == "Personalizado":
-    stroke_color = st.color_picker("Color Libre", default_stroke)
-  else:
-    stroke_color = colores_estudio[nombre_color]
+  col_c1, col_c2, col_c3 = st.columns(3)
+  selected_color = default_stroke
+  # Selector rápido mediante colores
+  color_elegido = st.selectbox("Elige color rápido:", list(colores_opciones.keys()))
+  stroke_color = colores_opciones[color_elegido]
 
-  bg_color = st.color_picker("Fondo de Pizarra", default_bg)
-
-  st.markdown("---")
-  st.subheader("📋 Patrones de Fondo")
-  tipo_guia = st.selectbox(
-      "Estructura:",
-      (
-          "Ninguna",
-          "Cuadrícula Matemáticas (Grid)",
-          "Puntos (Bullet Journal)",
-          "Líneas de Apunte",
-      ),
-  )
+  # Opción extra de color personalizado con degradado/selector libre
+  usar_personalizado = st.checkbox("Usar selector de color libre")
+  if usar_personalizado:
+    stroke_color = st.color_picker("Elige tu color exacto", default_stroke)
 
 
-# Función para generar plantillas de estudio limpias con Pillow
-def crear_imagen_fondo_estudio(width, height, bg_hex, guia):
+# Función generadora de fondos de cuaderno con Pillow
+def crear_fondo_cuaderno(width, height, bg_hex, guia):
   bg_rgb = tuple(int(bg_hex.lstrip("#")[i : i + 2], 16) for i in (0, 2, 4))
   img = Image.new("RGB", (width, height), bg_rgb)
   draw = ImageDraw.Draw(img)
 
-  # Color sutil y elegante para las guías académicas
-  guia_color = (226, 232, 240)  # Gris muy suave
+  # Determinar color de guías según el fondo
+  luminance = 0.299 * bg_rgb[0] + 0.587 * bg_rgb[1] + 0.114 * bg_rgb[2]
+  if luminance < 100:  # Fondo oscuro (pizarra verde)
+    guia_color = (255, 255, 255, 45)
+    margen_color = (231, 76, 60, 150)
+  else:  # Fondo claro (papel)
+    guia_color = (200, 190, 175)
+    margen_color = (231, 76, 60, 100)
 
-  if guia == "Cuadrícula Matemáticas (Grid)":
+  # Dibujar margen vertical estilo cuaderno escolar a la izquierda
+  draw.line([(55, 0), (55, height)], fill=margen_color[:3], width=2)
+
+  if guia == "Renglones de Cuaderno":
+    step = 40
+    for y in range(step, height, step):
+      draw.line([(0, y), (width, y)], fill=guia_color[:3], width=1)
+
+  elif guia == "Cuadrícula":
     step = 35
     for x in range(0, width, step):
-      draw.line([(x, 0), (x, height)], fill=guia_color, width=1)
+      draw.line([(x, 0), (x, height)], fill=guia_color[:3], width=1)
     for y in range(0, height, step):
-      draw.line([(0, y), (width, y)], fill=guia_color, width=1)
+      draw.line([(0, y), (width, y)], fill=guia_color[:3], width=1)
 
-  elif guia == "Puntos (Bullet Journal)":
+  elif guia == "Puntos":
     step = 30
-    for x in range(20, width, step):
-      for y in range(20, height, step):
-        draw.ellipse(
-            [(x - 1, y - 1), (x + 1, y + 1)], fill=(203, 213, 225)
-        )  # Puntos delicados
-
-  elif guia == "Líneas de Apunte":
-    step = 45
-    for y in range(step, height, step):
-      draw.line([(40, y), (width - 40, y)], fill=guia_color, width=1)
+    for x in range(30, width, step):
+      for y in range(30, height, step):
+        draw.ellipse([(x - 1, y - 1), (x + 1, y + 1)], fill=guia_color[:3])
 
   return img
 
 
-# Generar fondo de estudio
-bg_image = crear_imagen_fondo_estudio(
-    canvas_width, canvas_height, bg_color, tipo_guia
-)
+# Generar imagen de fondo
+bg_image = crear_fondo_cuaderno(canvas_width, canvas_height, default_bg, tipo_guia)
 
-# Layout Principal: Canvas y Panel explicativo lateral
-col_canvas, col_info = st.columns([2.2, 1], gap="large")
+# Layout principal: Dividido entre el tablero central y el panel de stickers a la derecha
+col_main, col_stickers = st.columns([3, 1], gap="medium")
 
-with col_canvas:
+with col_main:
+  st.markdown(
+      '<div class="notebook-container">', unsafe_allow_html=True
+  )
+
   canvas_result = st_canvas(
-      fill_color="rgba(37, 99, 235, 0.1)",  # Relleno de figuras translúcido y limpio
+      fill_color="rgba(41, 128, 185, 0.15)",
       stroke_width=stroke_width,
       stroke_color=stroke_color,
-      background_color=bg_color,
+      background_color=default_bg,
       background_image=bg_image,
       height=canvas_height,
       width=canvas_width,
       drawing_mode=drawing_mode,
-      key=f"canvas_estudio_{canvas_width}_{canvas_height}_{perfil_estudio}_{tipo_guia}_{bg_color}",
+      key=f"canvas_cuaderno_{canvas_width}_{canvas_height}_{tipo_fondo}_{tipo_guia}_{default_bg}",
   )
 
   st.markdown("<br>", unsafe_allow_html=True)
-  btn_col1, btn_col2 = st.columns(2)
+  b_col1, b_col2 = st.columns(2)
 
-  with btn_col1:
-    if st.button("🗑️ Limpiar Pizarra", use_container_width=True):
+  with b_col1:
+    if st.button("🗑️ Limpiar Hoja", use_container_width=True):
       st.rerun()
 
-  with btn_col2:
+  with b_col2:
     has_image = False
     img_pil = None
     try:
@@ -264,38 +300,27 @@ with col_canvas:
       byte_im = buf.getvalue()
 
       st.download_button(
-          label="💾 Descargar Apunte",
+          label="💾 Guardar Página",
           data=byte_im,
-          file_name="apunte_estudio.png",
+          file_name="mi_apunte_cuaderno.png",
           mime="image/png",
           use_container_width=True,
       )
     else:
-      st.button("💾 Descargar Apunte", disabled=True, use_container_width=True)
+      st.button("💾 Guardar Página", disabled=True, use_container_width=True)
 
-with col_info:
-  st.markdown("### 💡 Enfoques de la Pizarra")
+  st.markdown("</div>", unsafe_allow_html=True)
 
+with col_stickers:
+  st.markdown("### 📌 Mis Stickers")
   st.markdown(
       """
-    <div class="study-card">
-        <div class="study-card-title">🧠 Mapa Mental</div>
-        <div class="study-card-desc">Usa figuras geométricas limpias con relleno suave para conectar ideas, conceptos y lluvias de ideas sin saturación visual.</div>
-    </div>
-    
-    <div class="study-card">
-        <div class="study-card-title">📐 Fórmulas & Ejercicios</div>
-        <div class="study-card-desc">Fondo tipo papel marfil con cuadrícula matemática para despejar ecuaciones, trazar ejes o graficar funciones.</div>
-    </div>
-    
-    <div class="study-card">
-        <div class="study-card-title">📝 Bullet Journal</div>
-        <div class="study-card-desc">Patrón de puntos discretos perfecto para estructurar listas de tareas, cronogramas de estudio o esquemas libres.</div>
-    </div>
-
-    <div class="study-card">
-        <div class="study-card-title">🎨 Tinta Académica</div>
-        <div class="study-card-desc">Paleta de colores optimizada para jerarquizar información (títulos, notas importantes, subrayados y conexiones).</div>
+    <div class="sticker-container">
+        <div class="sticker-badge">⭐ ¡Excelente Apunte!</div>
+        <div class="sticker-badge blue">📌 Recordatorio Clave</div>
+        <div class="sticker-badge pink">💡 Idea Brillante</div>
+        <div class="sticker-badge green">🚀 Focus Mode ON</div>
+        <div class="sticker-badge">✨ Estilo Personal</div>
     </div>
     """,
       unsafe_allow_html=True,
