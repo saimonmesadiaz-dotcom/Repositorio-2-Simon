@@ -182,6 +182,7 @@ st.markdown(
     z-index: 0;
     padding-left: 1.5rem !important;
     padding-right: 1.5rem !important;
+    padding-top: 1rem !important;
 }}
 
 /* ---------- Barra lateral amarilla y ANCHA ---------- */
@@ -300,41 +301,26 @@ st.markdown(
 /* ---------- Portada ---------- */
 .art-hero {{
     background: #2D2A26;
-    padding: 22px 30px;
-    border-radius: 16px;
-    box-shadow: 6px 6px 0 {AMARILLO};
-    margin-bottom: 22px;
+    padding: 12px 20px;
+    border-radius: 14px;
+    box-shadow: 4px 4px 0 {AMARILLO};
+    margin-top: -10px;
+    margin-bottom: 16px;
     border: 3px solid #1F1308;
     text-align: center;
 }}
 .art-hero h1 {{
     margin: 0;
-    padding: .1em .3em .25em .3em;
-    font-family: 'Pacifico', 'Dancing Script', cursive;
-    font-weight: 400;
-    font-size: 3.9rem;
-    line-height: 1.3;
+    padding: 0;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 2.5rem;
+    line-height: 1.2;
     letter-spacing: .5px;
-    display: inline-block;
-    background: linear-gradient(90deg,
-        #FFF6E0, #F8DE95, #F0B03C, #FFE7A8, #F3E3C3, #FFF6E0);
-    background-size: 300% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    animation: titleflow 7s linear infinite, titleblur 4.5s ease-in-out infinite;
-}}
-@keyframes titleflow {{
-    0%   {{ background-position: 0% 50%; }}
-    100% {{ background-position: 300% 50%; }}
-}}
-@keyframes titleblur {{
-    0%, 100% {{ filter: blur(0px) drop-shadow(0 0 6px rgba(240,176,60,.35)); }}
-    50%      {{ filter: blur(.6px) drop-shadow(0 0 18px rgba(240,176,60,.7)); }}
+    color: #F0B03C;
 }}
 .art-hero p {{
-    margin: 6px 0 0 0; color: #FFF8E1; font-size: 1.6rem; line-height: 1.1;
+    margin: 4px 0 0 0; color: #FFF8E1; font-size: 1.2rem; line-height: 1.1;
     font-family: 'Caveat', cursive; font-weight: 700;
 }}
 
@@ -378,7 +364,7 @@ st.markdown(
 }}
 
 /* =====================================================================
-   STICKERS ANIMADOS DEL FONDO
+    STICKERS ANIMADOS DEL FONDO
    ===================================================================== */
 .sticker-layer {{
     position: fixed;
@@ -545,7 +531,7 @@ with st.sidebar:
     for cat_key, cat_label in CATEGORIAS:
         abierta = st.session_state.open_cat == cat_key
         flecha = "▲" if abierta else "▼"
-        if st.button(f"{cat_label}   {flecha}", key=cat_key, use_container_width=True):
+        if st.button(f"{cat_label}    {flecha}", key=cat_key, use_container_width=True):
             st.session_state.open_cat = None if abierta else cat_key
             st.rerun()
 
