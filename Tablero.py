@@ -23,6 +23,8 @@ CAFE = "#5B3A1F"        # texto café de contraste
 CREMA = "#F7F4EA"       # fondo general
 AMARILLO = "#F4C430"    # barra lateral
 CARD_BG = "#FFF1B0"     # card desplegable (amarillo más claro)
+BOTON = "#FFA700"       # amarillo cromo intenso para los botones
+BOTON_HOVER = "#FFC247"
 
 COLORES_TIZA = {
     "Azul Ultramar": "#0047AB",
@@ -56,9 +58,9 @@ GROSORES = {
 }
 
 TAMANOS = {
-    "Apaisado (620×400)": (620, 400),
-    "Cuadrado (480×480)": (480, 480),
-    "Panorámico (700×350)": (700, 350),
+    "Apaisado (560×370)": (560, 370),
+    "Cuadrado (440×440)": (440, 440),
+    "Panorámico (600×320)": (600, 320),
 }
 
 TEMAS = {
@@ -109,7 +111,7 @@ defaults = {
     "color": "#2D2A26",
     "herramienta": "freedraw",
     "grosor": 5,
-    "tamano": "Apaisado (620×400)",
+    "tamano": "Apaisado (560×370)",
     "tema": "☀️ Playero",
     "guia": "Renglones de Cuaderno",
     "canvas_v": 0,               # sube cuando se limpia el lienzo
@@ -176,12 +178,14 @@ st.markdown(
 .block-container, [data-testid="stMainBlockContainer"] {{
     position: relative;
     z-index: 0;
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
 }}
 
 /* ---------- Barra lateral amarilla y ANCHA ---------- */
 [data-testid="stSidebar"][aria-expanded="true"] {{
-    width: 460px !important;
-    min-width: 460px !important;
+    width: 50vw !important;
+    min-width: 50vw !important;
 }}
 [data-testid="stSidebar"] {{
     background-color: {AMARILLO} !important;
@@ -217,12 +221,30 @@ st.markdown(
 
 /* Botones de categoría (el color se mantiene abierto o cerrado) */
 [class*="st-key-cat_"] button {{
-    background: #2D2A26 !important;
-    box-shadow: 4px 4px 0 #8a6d00 !important;
+    background: {BOTON} !important;
+    border: 2px solid {CAFE} !important;
+    box-shadow: 4px 4px 0 {CAFE} !important;
     padding: .55rem 1rem !important;
 }}
-[class*="st-key-cat_"] button p {{ color: {CREMA} !important; font-size: 1.02rem; }}
-[class*="st-key-cat_"] button:hover {{ transform: translate(-1px,-1px); box-shadow: 6px 6px 0 #8a6d00 !important; }}
+[class*="st-key-cat_"] button p {{ color: {CAFE} !important; font-size: 1.05rem; font-weight: 900; }}
+[class*="st-key-cat_"] button:hover {{
+    background: {BOTON_HOVER} !important;
+    transform: translate(-1px,-1px);
+    box-shadow: 6px 6px 0 {CAFE} !important;
+}}
+
+/* Punto que muestra el tamaño de la tiza */
+.dot-wrap {{
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}}
+.dot {{
+    border-radius: 50%;
+    border: 1.5px solid {CAFE};
+    box-shadow: 1px 2px 0 rgba(91,58,31,.35);
+}}
 
 /* ---------- Card desplegable ---------- */
 .st-key-card_open {{
@@ -246,9 +268,6 @@ st.markdown(
     box-shadow: 2px 2px 0 {CAFE} !important;
 }}
 [class*="st-key-opt_"] button p {{ color: {CAFE} !important; }}
-[class*="st-key-opt_"] {PRIMARY.replace('button', 'button')} {{
-    background: {CAFE} !important;
-}}
 [class*="st-key-opt_"] button[kind="primary"] p,
 [class*="st-key-opt_"] button[data-testid="stBaseButton-primary"] p {{ color: {CREMA} !important; }}
 [class*="st-key-opt_"] button[kind="primary"],
@@ -324,6 +343,7 @@ st.markdown(
     z-index: -1;
     pointer-events: none;
     overflow: hidden;
+    background: rgba(70, 50, 30, .42);   /* fondo oscuro para bajar la saturación */
 }}
 .stk {{
     position: absolute;
@@ -337,7 +357,7 @@ st.markdown(
     border: 3px solid #fff;
     border-radius: 28%;
     box-shadow: 0 0 0 2px rgba(45,42,38,.28), 3px 4px 8px rgba(0,0,0,.18);
-    opacity: .9;
+    opacity: .38;
     overflow: hidden;
     transform: rotate(var(--r));
     animation:
@@ -358,7 +378,7 @@ st.markdown(
     left: -120%;
     width: 55%;
     height: 220%;
-    background: linear-gradient(100deg, transparent, rgba(255,255,255,.95), transparent);
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.6), transparent);
     transform: rotate(20deg);
     animation: shine var(--t2) linear var(--d) infinite;
 }}
@@ -368,7 +388,7 @@ st.markdown(
 }}
 @keyframes glow {{
     0%, 100% {{ box-shadow: 0 0 0 2px rgba(45,42,38,.28), 3px 4px 8px rgba(0,0,0,.18); }}
-    50%      {{ box-shadow: 0 0 0 2px rgba(244,196,48,.9), 0 0 18px 6px rgba(255,214,64,.75); }}
+    50%      {{ box-shadow: 0 0 0 2px rgba(244,196,48,.6), 0 0 12px 3px rgba(255,214,64,.45); }}
 }}
 @keyframes shine {{
     0%   {{ left: -120%; }}
@@ -399,13 +419,23 @@ def boton_opcion(etiqueta, estado, valor, key_extra=""):
         st.rerun()
 
 
+def opciones_en_columnas(items, estado, n=2):
+    """Reparte botones de opción en n columnas (la barra ahora es ancha)."""
+    items = list(items)
+    for i in range(0, len(items), n):
+        cols = st.columns(n)
+        for col, (nombre, valor) in zip(cols, items[i : i + n]):
+            with col:
+                boton_opcion(nombre, estado, valor, key_extra=nombre)
+
+
 def contenido_categoria(cat):
     if cat == "cat_color":
         st.markdown('<div class="card-title">Color de tiza</div>', unsafe_allow_html=True)
         items = list(COLORES_TIZA.items())
-        for i in range(0, len(items), 4):
-            cols = st.columns(4)
-            for col, (nombre, hex_val) in zip(cols, items[i : i + 4]):
+        for i in range(0, len(items), 6):
+            cols = st.columns(6)
+            for col, (nombre, hex_val) in zip(cols, items[i : i + 6]):
                 with col:
                     activo = st.session_state.color.lower() == hex_val.lower()
                     if st.button(
@@ -426,27 +456,32 @@ def contenido_categoria(cat):
     elif cat == "cat_grosor":
         st.markdown('<div class="card-title">Grosor de tiza</div>', unsafe_allow_html=True)
         for nombre, valor in GROSORES.items():
-            boton_opcion(nombre, "grosor", valor)
+            c_dot, c_btn = st.columns([1, 5], vertical_alignment="center")
+            with c_dot:
+                d = max(4, int(valor * 1.3))  # el punto refleja el grosor
+                st.markdown(
+                    f'<div class="dot-wrap"><div class="dot" style="width:{d}px;'
+                    f'height:{d}px;background:{st.session_state.color};"></div></div>',
+                    unsafe_allow_html=True,
+                )
+            with c_btn:
+                boton_opcion(nombre, "grosor", valor)
 
     elif cat == "cat_dispo":
         st.markdown('<div class="card-title">Disposición / herramienta</div>', unsafe_allow_html=True)
-        for nombre, valor in HERRAMIENTAS.items():
-            boton_opcion(nombre, "herramienta", valor)
+        opciones_en_columnas(HERRAMIENTAS.items(), "herramienta")
 
     elif cat == "cat_tam":
         st.markdown('<div class="card-title">Tamaño del tablero</div>', unsafe_allow_html=True)
-        for nombre in TAMANOS:
-            boton_opcion(nombre, "tamano", nombre)
+        opciones_en_columnas([(n, n) for n in TAMANOS], "tamano")
 
     elif cat == "cat_tema":
         st.markdown('<div class="card-title">Temática del tablero</div>', unsafe_allow_html=True)
-        for nombre in TEMAS:
-            boton_opcion(nombre, "tema", nombre)
+        opciones_en_columnas([(n, n) for n in TEMAS], "tema")
 
     elif cat == "cat_guia":
         st.markdown('<div class="card-title">Patrón de papel</div>', unsafe_allow_html=True)
-        for nombre in GUIAS:
-            boton_opcion(nombre, "guia", nombre)
+        opciones_en_columnas([(n, n) for n in GUIAS], "guia")
 
 
 # =========================================================================
@@ -522,9 +557,7 @@ bg_image = crear_fondo(canvas_width, canvas_height, tema_actual["bg"], st.sessio
 # =========================================================================
 # LAYOUT PRINCIPAL
 # =========================================================================
-col_canvas, col_stickers = st.columns([3, 1], gap="medium")
-
-with col_canvas:
+if True:  # lienzo a todo el ancho del área principal
     st.markdown('<div class="canvas-card">', unsafe_allow_html=True)
 
     canvas_result = st_canvas(
@@ -579,26 +612,3 @@ with col_canvas:
             st.button("💾 Guardar Obra", disabled=True, use_container_width=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
-
-with col_stickers:
-    st.markdown("<h3 style='font-weight:900;'>📌 Stickers Vivos</h3>", unsafe_allow_html=True)
-    st.markdown(
-        "<p style='font-size:.85rem; color:#555;'>Cambia la temática al instante:</p>",
-        unsafe_allow_html=True,
-    )
-    for nombre in TEMAS:
-        if st.button(f"Sticker: {nombre}", key=f"quick_{nombre}", use_container_width=True):
-            st.session_state.tema = nombre
-            st.rerun()
-
-    st.markdown("---")
-    st.markdown(
-        f"""
-        <div class="sticker-box">
-            <p style="font-size:.75rem; font-weight:800; margin:0; color:#888;">AMBIENTE ACTUAL</p>
-            <p style="font-size:.95rem; font-weight:900; margin:5px 0 0 0; color:#2D2A26;">{tema_actual['titulo']}</p>
-            <p style="font-size:1.6rem; margin:8px 0 0 0;">{' '.join(tema_actual['emojis'])}</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
