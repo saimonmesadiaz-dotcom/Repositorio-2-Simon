@@ -534,7 +534,7 @@ with st.sidebar:
     st.markdown(
         """
         <div class="welcome">
-            <h2>👋 ¡Bienvenido a tu tablero personalizado!</h2>
+            <h2>👋 ¡Bienvenido a tu tablero!</h2>
             <p>Elige una categoría para abrirla y ajusta tu pizarra a tu gusto,
             tu temática y tu objetivo de práctica.</p>
         </div>
