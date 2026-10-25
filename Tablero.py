@@ -1,399 +1,604 @@
 import io
+import random
+
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
 import streamlit as st
+from PIL import Image, ImageDraw
 from streamlit_drawable_canvas import st_canvas
 
-# Configuración de página
+# =========================================================================
+# CONFIGURACIÓN DE PÁGINA
+# =========================================================================
 st.set_page_config(
-    page_title="Studio Gráfico | Cuaderno de Arte",
+    page_title="Mi Pizarra Personalizada",
+    page_icon="🎨",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# Estilos CSS: Estética Neo-Artesanal, Tonos Crema, Barra Amarillo Cromo Ancha y Tarjetas de Autor
-st.markdown(
-    """
-    <style>
-    /* Fondo general de toda la aplicación en crema cálido y acogedor */
-    .stApp {
-        background-color: #F7F4EA;
-        color: #2D2A26;
-        font-family: 'Inter', -apple-system, sans-serif;
-    }
-    
-    /* Barra lateral muy amplia en Amarillo Cromo elegante */
-    div[data-testid="stSidebar"] {
-        background-color: #F4C430 !important;
-        border-right: 3px solid #2D2A26;
-        padding: 1.5rem 1rem;
-        min-width: 320px !important;
-    }
-    div[data-testid="stSidebar"] * {
-        color: #2D2A26 !important;
-    }
+# =========================================================================
+# DATOS DE CONFIGURACIÓN
+# =========================================================================
+CAFE = "#5B3A1F"        # texto café de contraste
+CREMA = "#F7F4EA"       # fondo general
+AMARILLO = "#F4C430"    # barra lateral
+CARD_BG = "#FFF1B0"     # card desplegable (amarillo más claro)
 
-    /* Portada / Header principal del estudio de arte */
-    .art-hero {
-        background: #FFFDF7;
-        color: #2D2A26;
-        padding: 24px 32px;
-        border-radius: 16px;
-        box-shadow: 6px 6px 0px #2D2A26;
-        margin-bottom: 24px;
-        border: 3px solid #2D2A26;
-    }
-    .art-hero h1 {
-        margin: 0;
-        font-size: 2.2rem;
-        font-weight: 900;
-        letter-spacing: -0.5px;
-    }
-    .art-hero p {
-        margin: 8px 0 0 0;
-        color: #6E685F;
-        font-size: 1rem;
-    }
+COLORES_TIZA = {
+    "Azul Ultramar": "#0047AB",
+    "Rojo Carmín": "#960018",
+    "Verde Olivo": "#556B2F",
+    "Amarillo Ocre": "#CC7722",
+    "Rosa Pastel": "#FFB6C1",
+    "Negro Grafito": "#2D2A26",
+    "Naranja": "#F97316",
+    "Morado": "#7E22CE",
+    "Turquesa": "#14B8A6",
+    "Marrón": "#7B4B2A",
+    "Blanco Tiza": "#FFFFFF",
+    "Gris Piedra": "#9CA3AF",
+}
 
-    /* Contenedor del Canvas de Dibujo */
-    .canvas-card {
-        background: #FFFDF7;
-        border: 3px solid #2D2A26;
-        border-radius: 16px;
-        padding: 24px;
-        box-shadow: 8px 8px 0px #2D2A26;
-    }
+HERRAMIENTAS = {
+    "✏️ Tiza libre": "freedraw",
+    "📏 Línea recta": "line",
+    "▭ Rectángulo": "rect",
+    "⭕ Círculo": "circle",
+    "✋ Mover figuras": "transform",
+}
 
-    /* Botones de acción principales */
-    .stButton > button {
-        background: #2D2A26 !important;
-        color: #F7F4EA !important;
-        border: 2px solid #2D2A26 !important;
-        border-radius: 12px !important;
-        font-weight: 800 !important;
-        box-shadow: 3px 3px 0px #888 !important;
-        transition: all 0.1s ease !important;
-    }
-    .stButton > button:hover {
-        background: #F4C430 !important;
-        color: #2D2A26 !important;
-        transform: translate(-1px, -1px);
-        box-shadow: 5px 5px 0px #2D2A26 !important;
-    }
+GROSORES = {
+    "Muy fina · 2": 2,
+    "Fina · 5": 5,
+    "Media · 9": 9,
+    "Gruesa · 15": 15,
+    "Extra gruesa · 25": 25,
+}
 
-    /* Tarjetas de Stickers Interactivos */
-    .sticker-box {
-        background: #FFFDF7;
-        border: 2px solid #2D2A26;
-        border-radius: 12px;
-        padding: 12px;
-        text-align: center;
-        box-shadow: 4px 4px 0px #2D2A26;
-    }
-    </style>
-""",
-    unsafe_allow_html=True,
-)
+TAMANOS = {
+    "Apaisado (620×400)": (620, 400),
+    "Cuadrado (480×480)": (480, 480),
+    "Panorámico (700×350)": (700, 350),
+}
 
-# Inicializar estados de la sesión
-if "active_section" not in st.session_state:
-  st.session_state.active_section = "🎨 Paleta de Pintor"
+TEMAS = {
+    "☀️ Playero": {
+        "bg": "#E0F7FA",
+        "titulo": "Vibe Playero & Solecitos",
+        "emojis": ["☀️", "🌴", "🌊", "🏖️", "⭐"],
+    },
+    "💖 Enamorados": {
+        "bg": "#FCE4EC",
+        "titulo": "Vibe Enamorados & Corazones",
+        "emojis": ["💖", "💌", "✨", "🌹", "💘"],
+    },
+    "🎵 Vinilos": {
+        "bg": "#EFEBE9",
+        "titulo": "Vibe Vintage & Discos",
+        "emojis": ["🎵", "🎧", "💿", "🎷", "🎶"],
+    },
+    "😊 Caritas Felices": {
+        "bg": "#FFFDE7",
+        "titulo": "Vibe Pop & Caritas Felices",
+        "emojis": ["😊", "⭐", "🚀", "🎨", "🔥"],
+    },
+}
 
-if "current_theme" not in st.session_state:
-  st.session_state.current_theme = "☀️ Playero"
+GUIAS = ["Renglones de Cuaderno", "Cuadrícula Artística", "Puntos Minimalistas", "Lienzo Limpio"]
 
-if "selected_color" not in st.session_state:
-  st.session_state.selected_color = "#2D2A26"
+# Stickers de estudio que siempre aparecen (números, letras, útiles)
+STICKERS_ESTUDIO = [
+    "A", "B", "C", "ñ", "a", "b", "1", "2", "3", "7", "+", "=", "abc", "123",
+    "✏️", "📚", "🔢", "🔤", "📐", "🖍️", "🍎", "📓", "🖊️", "🧮", "🎒", "📏",
+]
 
-# Header / Portada de Diseñador
-st.markdown(
-    """
-    <div class="art-hero">
-        <h1>🎨 STUDIO ARTE INTERACTIVO</h1>
-        <p>Espacio de creación libre de autor: mezcla tintas en tu paleta, selecciona texturas de papel y activa mundos animados.</p>
-    </div>
-""",
-    unsafe_allow_html=True,
-)
+CATEGORIAS = [
+    ("cat_color", "🎨 Color de tiza"),
+    ("cat_grosor", "🖍️ Grosor de tiza"),
+    ("cat_dispo", "📐 Disposición"),
+    ("cat_tam", "📏 Tamaño"),
+    ("cat_tema", "✨ Temática"),
+    ("cat_guia", "📝 Renglones"),
+]
 
 # =========================================================================
-# BARRA LATERAL (AMARILLO CROMO Y AMPLIA) - Módulos Interactivos
+# ESTADO DE SESIÓN
+# =========================================================================
+defaults = {
+    "open_cat": None,            # solo una categoría abierta a la vez
+    "color": "#2D2A26",
+    "herramienta": "freedraw",
+    "grosor": 5,
+    "tamano": "Apaisado (620×400)",
+    "tema": "☀️ Playero",
+    "guia": "Renglones de Cuaderno",
+    "canvas_v": 0,               # sube cuando se limpia el lienzo
+}
+for k, v in defaults.items():
+    if k not in st.session_state:
+        st.session_state[k] = v
+
+
+# =========================================================================
+# STICKERS ANIMADOS DE FONDO (escritorio de estudio)
+# =========================================================================
+def construir_stickers(emojis_tema):
+    rnd = random.Random(7)  # semilla fija: las posiciones no saltan al recargar
+    pool = emojis_tema * 3 + STICKERS_ESTUDIO
+    cols, rows = 8, 5
+    html = []
+    for r in range(rows):
+        for c in range(cols):
+            left = (c + rnd.uniform(0.05, 0.75)) / cols * 100
+            top = (r + rnd.uniform(0.05, 0.75)) / rows * 100
+            size = rnd.randint(46, 76)
+            rot = rnd.randint(-18, 18)
+            dur = rnd.uniform(4, 8)
+            delay = rnd.uniform(0, 5)
+            txt = rnd.choice(pool)
+            es_texto = txt.isalnum() or txt in "+="
+            clase = "stk txt" if es_texto else "stk"
+            html.append(
+                f'<div class="{clase}" style="left:{left:.1f}vw;top:{top:.1f}vh;'
+                f"--s:{size}px;--r:{rot}deg;--t:{dur:.1f}s;--d:{delay:.1f}s;"
+                f'--t2:{dur * 0.9 + 2:.1f}s">{txt}</div>'
+            )
+    return '<div class="sticker-layer">' + "".join(html) + "</div>"
+
+
+tema_actual = TEMAS[st.session_state.tema]
+
+# =========================================================================
+# CSS
+# =========================================================================
+css_swatches = ""
+for hex_val in COLORES_TIZA.values():
+    h = hex_val.lstrip("#")
+    css_swatches += (
+        f".st-key-sw_{h} button, .st-key-sw_{h} button:hover, "
+        f".st-key-sw_{h} button:focus {{ background: {hex_val} !important; }}\n"
+    )
+
+PRIMARY = 'button[kind="primary"], button[data-testid="stBaseButton-primary"]'
+
+st.markdown(
+    f"""
+<style>
+/* ---------- Fondo general crema ---------- */
+.stApp {{
+    background-color: {CREMA};
+    color: #2D2A26;
+    font-family: 'Inter', -apple-system, sans-serif;
+}}
+[data-testid="stHeader"] {{ background: transparent; }}
+
+/* Contenido por encima de los stickers */
+.block-container, [data-testid="stMainBlockContainer"] {{
+    position: relative;
+    z-index: 0;
+}}
+
+/* ---------- Barra lateral amarilla y ANCHA ---------- */
+[data-testid="stSidebar"][aria-expanded="true"] {{
+    width: 460px !important;
+    min-width: 460px !important;
+}}
+[data-testid="stSidebar"] {{
+    background-color: {AMARILLO} !important;
+    border-right: 3px solid #2D2A26;
+}}
+[data-testid="stSidebar"] h1,
+[data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3,
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] label {{
+    color: #2D2A26;
+}}
+
+/* ---------- Bienvenida ---------- */
+.welcome {{
+    background: #FFFDF7;
+    border: 3px solid #2D2A26;
+    border-radius: 16px;
+    padding: 16px 18px;
+    box-shadow: 5px 5px 0 #2D2A26;
+    margin-bottom: 18px;
+}}
+.welcome h2 {{ margin: 0 0 6px 0; font-size: 1.35rem; font-weight: 900; color: #2D2A26; }}
+.welcome p  {{ margin: 0; font-size: .9rem; color: {CAFE}; font-weight: 600; }}
+
+/* ---------- Botones base de la barra ---------- */
+[data-testid="stSidebar"] .stButton button {{
+    border-radius: 12px !important;
+    font-weight: 800 !important;
+    border: 2px solid #2D2A26 !important;
+    transition: all .1s ease !important;
+}}
+
+/* Botones de categoría (el color se mantiene abierto o cerrado) */
+[class*="st-key-cat_"] button {{
+    background: #2D2A26 !important;
+    box-shadow: 4px 4px 0 #8a6d00 !important;
+    padding: .55rem 1rem !important;
+}}
+[class*="st-key-cat_"] button p {{ color: {CREMA} !important; font-size: 1.02rem; }}
+[class*="st-key-cat_"] button:hover {{ transform: translate(-1px,-1px); box-shadow: 6px 6px 0 #8a6d00 !important; }}
+
+/* ---------- Card desplegable ---------- */
+.st-key-card_open {{
+    background: {CARD_BG};
+    border: 2px solid {CAFE};
+    border-radius: 14px;
+    padding: 14px 14px 10px 14px;
+    margin: -4px 0 14px 0;
+    box-shadow: 3px 3px 0 {CAFE};
+}}
+.st-key-card_open p, .st-key-card_open label, .st-key-card_open span {{ color: {CAFE} !important; }}
+.card-title {{
+    font-weight: 900; font-size: .95rem; color: {CAFE};
+    text-decoration: underline; text-underline-offset: 4px;
+    margin-bottom: 10px;
+}}
+
+/* Opciones dentro de la card */
+[class*="st-key-opt_"] button {{
+    background: #FFFDF7 !important;
+    box-shadow: 2px 2px 0 {CAFE} !important;
+}}
+[class*="st-key-opt_"] button p {{ color: {CAFE} !important; }}
+[class*="st-key-opt_"] {PRIMARY.replace('button', 'button')} {{
+    background: {CAFE} !important;
+}}
+[class*="st-key-opt_"] button[kind="primary"] p,
+[class*="st-key-opt_"] button[data-testid="stBaseButton-primary"] p {{ color: {CREMA} !important; }}
+[class*="st-key-opt_"] button[kind="primary"],
+[class*="st-key-opt_"] button[data-testid="stBaseButton-primary"] {{ background: {CAFE} !important; }}
+
+/* Cuadraditos de color */
+[class*="st-key-sw_"] button {{
+    height: 52px !important;
+    min-height: 52px !important;
+    border: 2px solid {CAFE} !important;
+    border-radius: 10px !important;
+    box-shadow: 2px 2px 0 {CAFE} !important;
+}}
+[class*="st-key-sw_"] button p {{ color: #fff !important; font-size: 1.3rem; text-shadow: 0 0 3px #000; }}
+[class*="st-key-sw_"] button[kind="primary"],
+[class*="st-key-sw_"] button[data-testid="stBaseButton-primary"] {{
+    outline: 4px solid {CAFE};
+    outline-offset: 2px;
+}}
+{css_swatches}
+
+/* ---------- Portada ---------- */
+.art-hero {{
+    background: #FFFDF7;
+    padding: 22px 30px;
+    border-radius: 16px;
+    box-shadow: 6px 6px 0 #2D2A26;
+    margin-bottom: 22px;
+    border: 3px solid #2D2A26;
+}}
+.art-hero h1 {{ margin: 0; font-size: 2.1rem; font-weight: 900; letter-spacing: -.5px; }}
+.art-hero p {{ margin: 8px 0 0 0; color: #6E685F; font-size: 1rem; }}
+
+/* ---------- Canvas ---------- */
+.canvas-card {{
+    background: #FFFDF7;
+    border: 3px solid #2D2A26;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 8px 8px 0 #2D2A26;
+}}
+
+/* Botones del área principal */
+.stMain .stButton button, .stMain .stDownloadButton button {{
+    background: #2D2A26 !important;
+    border: 2px solid #2D2A26 !important;
+    border-radius: 12px !important;
+    font-weight: 800 !important;
+    box-shadow: 3px 3px 0 #888 !important;
+}}
+.stMain .stButton button p, .stMain .stDownloadButton button p {{ color: {CREMA} !important; }}
+.stMain .stButton button:hover, .stMain .stDownloadButton button:hover {{
+    background: {AMARILLO} !important;
+    transform: translate(-1px,-1px);
+}}
+.stMain .stButton button:hover p, .stMain .stDownloadButton button:hover p {{ color: #2D2A26 !important; }}
+
+.sticker-box {{
+    background: #FFFDF7;
+    border: 2px solid #2D2A26;
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    box-shadow: 4px 4px 0 #2D2A26;
+}}
+
+/* =====================================================================
+   STICKERS ANIMADOS DEL FONDO
+   ===================================================================== */
+.sticker-layer {{
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+}}
+.stk {{
+    position: absolute;
+    width: var(--s);
+    height: var(--s);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(var(--s) * .55);
+    background: #fff;
+    border: 3px solid #fff;
+    border-radius: 28%;
+    box-shadow: 0 0 0 2px rgba(45,42,38,.28), 3px 4px 8px rgba(0,0,0,.18);
+    opacity: .9;
+    overflow: hidden;
+    transform: rotate(var(--r));
+    animation:
+        floaty var(--t) ease-in-out var(--d) infinite,
+        glow calc(var(--t) * .8) ease-in-out var(--d) infinite;
+}}
+.stk.txt {{
+    font-family: 'Comic Sans MS', 'Segoe Print', cursive;
+    font-weight: 900;
+    color: {CAFE};
+    font-size: calc(var(--s) * .5);
+}}
+/* Destello que cruza el sticker */
+.stk::after {{
+    content: "";
+    position: absolute;
+    top: -60%;
+    left: -120%;
+    width: 55%;
+    height: 220%;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.95), transparent);
+    transform: rotate(20deg);
+    animation: shine var(--t2) linear var(--d) infinite;
+}}
+@keyframes floaty {{
+    0%, 100% {{ transform: translateY(0) rotate(var(--r)) scale(1); }}
+    50%      {{ transform: translateY(-12px) rotate(calc(var(--r) + 7deg)) scale(1.07); }}
+}}
+@keyframes glow {{
+    0%, 100% {{ box-shadow: 0 0 0 2px rgba(45,42,38,.28), 3px 4px 8px rgba(0,0,0,.18); }}
+    50%      {{ box-shadow: 0 0 0 2px rgba(244,196,48,.9), 0 0 18px 6px rgba(255,214,64,.75); }}
+}}
+@keyframes shine {{
+    0%   {{ left: -120%; }}
+    55%, 100% {{ left: 170%; }}
+}}
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
+# Capa de stickers
+st.markdown(construir_stickers(tema_actual["emojis"]), unsafe_allow_html=True)
+
+
+# =========================================================================
+# AYUDAS PARA LA BARRA LATERAL
+# =========================================================================
+def boton_opcion(etiqueta, estado, valor, key_extra=""):
+    """Botón seleccionable: si es el valor activo se muestra resaltado con ✓."""
+    activo = st.session_state[estado] == valor
+    if st.button(
+        f"✓ {etiqueta}" if activo else etiqueta,
+        key=f"opt_{estado}_{key_extra or valor}",
+        type="primary" if activo else "secondary",
+        use_container_width=True,
+    ):
+        st.session_state[estado] = valor
+        st.rerun()
+
+
+def contenido_categoria(cat):
+    if cat == "cat_color":
+        st.markdown('<div class="card-title">Color de tiza</div>', unsafe_allow_html=True)
+        items = list(COLORES_TIZA.items())
+        for i in range(0, len(items), 4):
+            cols = st.columns(4)
+            for col, (nombre, hex_val) in zip(cols, items[i : i + 4]):
+                with col:
+                    activo = st.session_state.color.lower() == hex_val.lower()
+                    if st.button(
+                        "✓" if activo else "\u00a0",
+                        key=f"sw_{hex_val.lstrip('#')}",
+                        help=nombre,
+                        type="primary" if activo else "secondary",
+                        use_container_width=True,
+                    ):
+                        st.session_state.color = hex_val
+                        st.rerun()
+        st.markdown("<b>➕ Mezclador libre:</b>", unsafe_allow_html=True)
+        elegido = st.color_picker("Tono exacto", st.session_state.color)
+        if elegido.lower() != st.session_state.color.lower():
+            st.session_state.color = elegido
+            st.rerun()
+
+    elif cat == "cat_grosor":
+        st.markdown('<div class="card-title">Grosor de tiza</div>', unsafe_allow_html=True)
+        for nombre, valor in GROSORES.items():
+            boton_opcion(nombre, "grosor", valor)
+
+    elif cat == "cat_dispo":
+        st.markdown('<div class="card-title">Disposición / herramienta</div>', unsafe_allow_html=True)
+        for nombre, valor in HERRAMIENTAS.items():
+            boton_opcion(nombre, "herramienta", valor)
+
+    elif cat == "cat_tam":
+        st.markdown('<div class="card-title">Tamaño del tablero</div>', unsafe_allow_html=True)
+        for nombre in TAMANOS:
+            boton_opcion(nombre, "tamano", nombre)
+
+    elif cat == "cat_tema":
+        st.markdown('<div class="card-title">Temática del tablero</div>', unsafe_allow_html=True)
+        for nombre in TEMAS:
+            boton_opcion(nombre, "tema", nombre)
+
+    elif cat == "cat_guia":
+        st.markdown('<div class="card-title">Patrón de papel</div>', unsafe_allow_html=True)
+        for nombre in GUIAS:
+            boton_opcion(nombre, "guia", nombre)
+
+
+# =========================================================================
+# BARRA LATERAL: BIENVENIDA + CATEGORÍAS DESPLEGABLES (UNA A LA VEZ)
 # =========================================================================
 with st.sidebar:
-  st.markdown(
-      "<h2 style='font-weight:900; margin-bottom:15px;'>🖌️ ESTUDIO CREATIVO</h2>",
-      unsafe_allow_html=True,
-  )
-  st.markdown(
-      "<p style='font-size:0.9rem; font-weight:700;'>Selecciona un módulo de"
-      " trabajo:</p>",
-      unsafe_allow_html=True,
-  )
-
-  sections = [
-      ("🎨 Paleta de Pintor", "Óleos y tintas"),
-      ("📐 Disposición", "Herramientas de trazo"),
-      ("📏 Tamaño", "Lienzo y formato"),
-      ("✨ Temática & Emojis", "Mundos animados"),
-      ("📝 Renglones", "Guías de papel"),
-  ]
-
-  for sec_title, sec_desc in sections:
-    is_active = st.session_state.active_section == sec_title
-    label = f"✨ [{sec_title}]" if is_active else f"🔹 {sec_title}"
-    if st.button(label, key=f"btn_sec_{sec_title}", use_container_width=True):
-      st.session_state.active_section = sec_title
-      st.rerun()
-
-  st.markdown("---")
-
-  # DESPLIEGUE SEGÚN LA SECCIÓN SELECCIONADA
-  active = st.session_state.active_section
-  st.markdown(
-      f"<h3 style='font-weight:800; border-bottom: 2px solid"
-      f" #2D2A26; padding-bottom:4px;'>⚙️ {active}</h3>",
-      unsafe_allow_html=True,
-  )
-
-  if active == "🎨 Paleta de Pintor":
     st.markdown(
-        "<p style='font-size:0.85rem; font-weight:700;'>Toca una gota de óleos"
-        " de la paleta artística:</p>",
+        """
+        <div class="welcome">
+            <h2>👋 ¡Bienvenido a tu personalización de tablero!</h2>
+            <p>Elige una categoría para abrirla y ajusta tu pizarra a tu gusto,
+            tu temática y tu objetivo de práctica.</p>
+        </div>
+        """,
         unsafe_allow_html=True,
     )
 
-    # Simulación visual de una paleta de pintura con botones distribuidos
-    c1, c2, c3 = st.columns(3)
-    painter_palette = {
-        "Azul Ultramar": "#0047AB",
-        "Rojo Carmín": "#960018",
-        "Verde Olivo": "#556B2F",
-        "Amarillo Ocre": "#CC7722",
-        "Rosa Pastel": "#FFB6C1",
-        "Negro Gráfito": "#2D2A26",
-    }
+    for cat_key, cat_label in CATEGORIAS:
+        abierta = st.session_state.open_cat == cat_key
+        flecha = "▲" if abierta else "▼"
+        if st.button(f"{cat_label}   {flecha}", key=cat_key, use_container_width=True):
+            st.session_state.open_cat = None if abierta else cat_key
+            st.rerun()
 
-    for name, hex_val in painter_palette.items():
-      if st.button(
-          name, key=f"paint_{hex_val}", use_container_width=True
-      ):
-        st.session_state.selected_color = hex_val
-
-    st.markdown("<br><b>➕ Mezclador Personalizado (Libre):</b>", unsafe_allow_html=True)
-    st.session_state.selected_color = st.color_picker(
-        "Añadir tono exacto", st.session_state.selected_color
-    )
-    stroke_color = st.session_state.selected_color
-
-  elif active == "📐 Disposición":
-    drawing_mode = st.selectbox(
-        "Herramienta de dibujo:",
-        ("freedraw", "line", "rect", "circle", "transform"),
-    )
-    stroke_width = st.slider("Grosor del pincel", 1, 40, 6)
-
-  elif active == "📏 Tamaño":
-    formato_hoja = st.selectbox(
-        "Formato del lienzo:",
-        [
-            "Apaisado Profesional (750x450)",
-            "Cuadrado Estudio (550x550)",
-            "Panorámico Ancho (900x500)",
-        ],
-    )
-    if "750x450" in formato_hoja:
-      canvas_width, canvas_height = 750, 450
-    elif "550x550" in formato_hoja:
-      canvas_width, canvas_height = 550, 550
-    else:
-      canvas_width, canvas_height = 900, 500
-
-  elif active == "✨ Temática & Emojis":
-    st.markdown(
-        "Elige un sticker animado para poblar el fondo del cuaderno:"
-    )
-    if st.button("☀️ Sticker: Playero (Soles/Palmeras)", use_container_width=True):
-      st.session_state.current_theme = "☀️ Playero"
-    if st.button("💖 Sticker: Enamorados (Corazones)", use_container_width=True):
-      st.session_state.current_theme = "💖 Enamorados"
-    if st.button("🎵 Sticker: Vinilos (Discos/Retro)", use_container_width=True):
-      st.session_state.current_theme = "🎵 Vinilos"
-    if st.button("😊 Sticker: Caritas Felices (Pop)", use_container_width=True):
-      st.session_state.current_theme = "😊 Caritas Felices"
-
-  elif active == "📝 Renglones":
-    tipo_guia = st.selectbox(
-        "Patrón de papel:",
-        [
-            "Renglones de Cuaderno",
-            "Cuadrícula Artística",
-            "Puntos Minimalistas",
-            "Lienzo Limpio",
-        ],
-    )
-
-# Valores predeterminados de seguridad
-if "stroke_color" not in locals():
-  stroke_color = st.session_state.selected_color
-if "drawing_mode" not in locals():
-  drawing_mode = "freedraw"
-if "stroke_width" not in locals():
-  stroke_width = 6
-if "canvas_width" not in locals():
-  canvas_width, canvas_height = 750, 450
-if "tipo_guia" not in locals():
-  tipo_guia = "Renglones de Cuaderno"
+        if abierta:
+            with st.container(key="card_open"):
+                contenido_categoria(cat_key)
 
 # =========================================================================
-# GESTIÓN DE TEMÁTICAS Y FONDOS CON EMOJIS ANIMADOS
+# PORTADA
 # =========================================================================
-current_theme = st.session_state.current_theme
-
-if "Playero" in current_theme:
-  default_bg = "#E0F7FA"
-  theme_title = "Vibe Playero & Solecitos"
-  emoji_list = ["☀️", "🌴", "🌊", "🏖️", "⭐"]
-elif "Enamorados" in current_theme:
-  default_bg = "#FCE4EC"
-  theme_title = "Vibe Enamorados & Corazones"
-  emoji_list = ["💖", "💌", "✨", "🌹", "💘"]
-elif "Vinilos" in current_theme:
-  default_bg = "#EFEBE9"
-  theme_title = "Vibe Vintage & Discos"
-  emoji_list = ["🎵", "🎧", "💿", "🎷", "🎶"]
-else:
-  default_bg = "#FFFDE7"
-  theme_title = "Vibe Pop & Caritas Felices"
-  emoji_list = ["😊", "⭐", "🚀", "🎨", "🔥"]
-
-
-# Función generadora de fondos artísticos con emojis incrustados
-def crear_fondo_creativo(width, height, bg_hex, guia, emojis):
-  bg_rgb = tuple(int(bg_hex.lstrip("#")[i : i + 2], 16) for i in (0, 2, 4))
-  img = Image.new("RGB", (width, height), bg_rgb)
-  draw = ImageDraw.Draw(img)
-
-  # Margen y guías estéticas crema
-  margen_color = (45, 42, 38)
-  guia_color = (220, 212, 198)
-
-  # Margen estilo cuaderno de diseño
-  draw.line([(55, 0), (55, height)], fill=margen_color, width=3)
-
-  if guia == "Renglones de Cuaderno":
-    step = 42
-    for y in range(step, height, step):
-      draw.line([(0, y), (width, y)], fill=guia_color, width=1)
-  elif guia == "Cuadrícula Artística":
-    step = 35
-    for x in range(0, width, step):
-      draw.line([(x, 0), (x, height)], fill=guia_color, width=1)
-    for y in range(0, height, step):
-      draw.line([(0, y), (width, y)], fill=guia_color, width=1)
-  elif guia == "Puntos Minimalistas":
-    step = 30
-    for x in range(30, width, step):
-      for y in range(30, height, step):
-        draw.ellipse([(x - 1, y - 1), (x + 1, y + 1)], fill=margen_color)
-
-  return img
-
-
-bg_image = crear_fondo_creativo(
-    canvas_width, canvas_height, default_bg, tipo_guia, emoji_list
+st.markdown(
+    """
+    <div class="art-hero">
+        <h1>🎨 MI PIZARRA DE PRÁCTICA</h1>
+        <p>Escribe números, letras y repasa caligrafía. Personaliza todo desde la barra amarilla.</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
 
+
 # =========================================================================
-# LAYOUT PRINCIPAL: Canvas de Dibujo + Panel de Stickers Interactivos Derecha
+# FONDO DEL TABLERO (guías de papel)
+# =========================================================================
+def crear_fondo(width, height, bg_hex, guia):
+    bg_rgb = tuple(int(bg_hex.lstrip("#")[i : i + 2], 16) for i in (0, 2, 4))
+    img = Image.new("RGB", (width, height), bg_rgb)
+    draw = ImageDraw.Draw(img)
+    margen_color = (45, 42, 38)
+    guia_color = (200, 190, 175)
+
+    draw.line([(55, 0), (55, height)], fill=margen_color, width=3)
+
+    if guia == "Renglones de Cuaderno":
+        for y in range(42, height, 42):
+            draw.line([(0, y), (width, y)], fill=guia_color, width=1)
+    elif guia == "Cuadrícula Artística":
+        for x in range(0, width, 35):
+            draw.line([(x, 0), (x, height)], fill=guia_color, width=1)
+        for y in range(0, height, 35):
+            draw.line([(0, y), (width, y)], fill=guia_color, width=1)
+    elif guia == "Puntos Minimalistas":
+        for x in range(30, width, 30):
+            for y in range(30, height, 30):
+                draw.ellipse([(x - 1, y - 1), (x + 1, y + 1)], fill=margen_color)
+    return img
+
+
+canvas_width, canvas_height = TAMANOS[st.session_state.tamano]
+bg_image = crear_fondo(canvas_width, canvas_height, tema_actual["bg"], st.session_state.guia)
+
+# =========================================================================
+# LAYOUT PRINCIPAL
 # =========================================================================
 col_canvas, col_stickers = st.columns([3, 1], gap="medium")
 
 with col_canvas:
-  st.markdown('<div class="canvas-card">', unsafe_allow_html=True)
+    st.markdown('<div class="canvas-card">', unsafe_allow_html=True)
 
-  canvas_result = st_canvas(
-      fill_color="rgba(244, 196, 48, 0.25)",
-      stroke_width=stroke_width,
-      stroke_color=stroke_color,
-      background_color=default_bg,
-      background_image=bg_image,
-      height=canvas_height,
-      width=canvas_width,
-      drawing_mode=drawing_mode,
-      key=f"canvas_art_{canvas_width}_{canvas_height}_{current_theme}_{tipo_guia}",
-  )
+    canvas_result = st_canvas(
+        fill_color="rgba(244, 196, 48, 0.25)",
+        stroke_width=st.session_state.grosor,
+        stroke_color=st.session_state.color,
+        background_color=tema_actual["bg"],
+        background_image=bg_image,
+        height=canvas_height,
+        width=canvas_width,
+        drawing_mode=st.session_state.herramienta,
+        key=(
+            f"canvas_{canvas_width}_{canvas_height}_{st.session_state.tema}"
+            f"_{st.session_state.guia}_{st.session_state.canvas_v}"
+        ),
+    )
 
-  st.markdown("<br>", unsafe_allow_html=True)
-  b1, b2 = st.columns(2)
+    st.markdown("<br>", unsafe_allow_html=True)
+    b1, b2 = st.columns(2)
 
-  with b1:
-    if st.button("🗑️ Limpiar Lienzo", use_container_width=True):
-      st.rerun()
+    with b1:
+        if st.button("🗑️ Limpiar Lienzo", use_container_width=True):
+            st.session_state.canvas_v += 1  # cambia la key => lienzo nuevo
+            st.rerun()
 
-  with b2:
-    has_image = False
-    img_pil = None
-    try:
-      if canvas_result is not None and canvas_result.image_data is not None:
-        img_data = canvas_result.image_data
-        if np.any(img_data):
-          img_pil = Image.fromarray(img_data.astype("uint8"), "RGBA")
-          has_image = True
-    except Exception:
-      has_image = False
+    with b2:
+        png_bytes = None
+        try:
+            if canvas_result is not None and canvas_result.image_data is not None:
+                data = canvas_result.image_data
+                if np.any(data[:, :, 3]):  # hay trazos
+                    capa = Image.fromarray(data.astype("uint8"), "RGBA")
+                    base = bg_image.convert("RGBA")
+                    if capa.size != base.size:
+                        capa = capa.resize(base.size)
+                    final = Image.alpha_composite(base, capa)  # fondo + trazos
+                    buf = io.BytesIO()
+                    final.save(buf, format="PNG")
+                    png_bytes = buf.getvalue()
+        except Exception:
+            png_bytes = None
 
-    if has_image and img_pil is not None:
-      buf = io.BytesIO()
-      img_pil.save(buf, format="PNG")
-      byte_im = buf.getvalue()
+        if png_bytes:
+            st.download_button(
+                "💾 Guardar Obra",
+                data=png_bytes,
+                file_name="mi_pizarra.png",
+                mime="image/png",
+                use_container_width=True,
+            )
+        else:
+            st.button("💾 Guardar Obra", disabled=True, use_container_width=True)
 
-      st.download_button(
-          label="💾 Guardar Obra",
-          data=byte_im,
-          file_name="obra_estudio.png",
-          mime="image/png",
-          use_container_width=True,
-      )
-    else:
-      st.button("💾 Guardar Obra", disabled=True, use_container_width=True)
-
-  st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 with col_stickers:
-  st.markdown(
-      "<h3 style='font-weight:900;'>📌 Stickers Vivos</h3>",
-      unsafe_allow_html=True,
-  )
-  st.markdown(
-      "<p style='font-size:0.85rem; color:#555;'>Selecciona un sticker para"
-      " transformar el fondo y los emojis al instante:</p>",
-      unsafe_allow_html=True,
-  )
+    st.markdown("<h3 style='font-weight:900;'>📌 Stickers Vivos</h3>", unsafe_allow_html=True)
+    st.markdown(
+        "<p style='font-size:.85rem; color:#555;'>Cambia la temática al instante:</p>",
+        unsafe_allow_html=True,
+    )
+    for nombre in TEMAS:
+        if st.button(f"Sticker: {nombre}", key=f"quick_{nombre}", use_container_width=True):
+            st.session_state.tema = nombre
+            st.rerun()
 
-  if st.button("☀️ Sticker: Playero", use_container_width=True):
-    st.session_state.current_theme = "☀️ Playero"
-    st.rerun()
-
-  if st.button("💖 Sticker: Enamorados", use_container_width=True):
-    st.session_state.current_theme = "💖 Enamorados"
-    st.rerun()
-
-  if st.button("🎵 Sticker: Vinilos", use_container_width=True):
-    st.session_state.current_theme = "🎵 Vinilos"
-    st.rerun()
-
-  if st.button("😊 Sticker: Carita Feliz", use_container_width=True):
-    st.session_state.current_theme = "😊 Caritas Felices"
-    st.rerun()
-
-  st.markdown("---")
-  st.markdown(
-      f"""
-    <div class="sticker-box">
-        <p style="font-size:0.75rem; font-weight:800; margin:0; color:#888;">AMBIENTE ACTUAL</p>
-        <p style="font-size:0.95rem; font-weight:900; margin:5px 0 0 0; color:#2D2A26;">{theme_title}</p>
-        <p style="font-size:1.6rem; margin:8px 0 0 0;">{' '.join(emoji_list)}</p>
-    </div>
-    """,
-      unsafe_allow_html=True,
-  )
+    st.markdown("---")
+    st.markdown(
+        f"""
+        <div class="sticker-box">
+            <p style="font-size:.75rem; font-weight:800; margin:0; color:#888;">AMBIENTE ACTUAL</p>
+            <p style="font-size:.95rem; font-weight:900; margin:5px 0 0 0; color:#2D2A26;">{tema_actual['titulo']}</p>
+            <p style="font-size:1.6rem; margin:8px 0 0 0;">{' '.join(tema_actual['emojis'])}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
