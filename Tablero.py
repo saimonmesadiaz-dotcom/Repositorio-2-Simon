@@ -95,12 +95,12 @@ STICKERS_ESTUDIO = [
 ]
 
 CATEGORIAS = [
-    ("cat_color", "🎨 Color de tiza"),
-    ("cat_grosor", "🖍️ Grosor de tiza"),
-    ("cat_dispo", "📐 Disposición"),
-    ("cat_tam", "📏 Tamaño"),
-    ("cat_tema", "✨ Temática"),
-    ("cat_guia", "📝 Renglones"),
+    ("cat_color", "Color de tiza"),
+    ("cat_grosor", "Grosor de tiza"),
+    ("cat_dispo", "Disposición"),
+    ("cat_tam", "Tamaño"),
+    ("cat_tema", "Temática"),
+    ("cat_guia", "Renglones"),
 ]
 
 # =========================================================================
