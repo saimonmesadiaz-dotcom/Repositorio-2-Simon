@@ -58,9 +58,9 @@ GROSORES = {
 }
 
 TAMANOS = {
-    "Ancho (720×400)": (720, 400),
-    "Alargado (740×320)": (740, 320),
-    "Cuadrado (460×460)": (460, 460),
+    "Grande (780×430)": (780, 430),
+    "Extra ancho (800×340)": (800, 340),
+    "Cuadrado (500×500)": (500, 500),
 }
 
 TEMAS = {
@@ -111,7 +111,7 @@ defaults = {
     "color": "#2D2A26",
     "herramienta": "freedraw",
     "grosor": 5,
-    "tamano": "Ancho (720×400)",
+    "tamano": "Grande (780×430)",
     "tema": "☀️ Playero",
     "guia": "Renglones de Cuaderno",
     "canvas_v": 0,               # sube cuando se limpia el lienzo
@@ -166,7 +166,7 @@ PRIMARY = 'button[kind="primary"], button[data-testid="stBaseButton-primary"]'
 st.markdown(
     f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Caveat:wght@600;700&family=Great+Vibes&family=Dancing+Script:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Caveat:wght@600;700&family=Pacifico&display=swap');
 
 /* ---------- Fondo general crema ---------- */
 .stApp {{
@@ -186,9 +186,9 @@ st.markdown(
 
 /* ---------- Barra lateral amarilla y ANCHA ---------- */
 [data-testid="stSidebar"][aria-expanded="true"] {{
-    width: 42vw !important;
-    min-width: 42vw !important;
-    max-width: 42vw !important;
+    width: 36vw !important;
+    min-width: 36vw !important;
+    max-width: 36vw !important;
 }}
 [data-testid="stSidebar"][aria-expanded="true"] > div:first-child {{
     width: 100% !important;
@@ -309,15 +309,15 @@ st.markdown(
 }}
 .art-hero h1 {{
     margin: 0;
-    padding: .05em .3em .15em .3em;
-    font-family: 'Great Vibes', 'Dancing Script', cursive;
+    padding: .1em .3em .25em .3em;
+    font-family: 'Pacifico', 'Dancing Script', cursive;
     font-weight: 400;
-    font-size: 4.6rem;
-    line-height: 1.15;
-    letter-spacing: 1px;
+    font-size: 3.9rem;
+    line-height: 1.3;
+    letter-spacing: .5px;
     display: inline-block;
     background: linear-gradient(90deg,
-        #F6D365, #FDA085, #F78FB3, #7FDBDA, #A8E6A1, #F6D365);
+        #FFF6E0, #F8DE95, #F0B03C, #FFE7A8, #F3E3C3, #FFF6E0);
     background-size: 300% 100%;
     -webkit-background-clip: text;
     background-clip: text;
@@ -330,8 +330,8 @@ st.markdown(
     100% {{ background-position: 300% 50%; }}
 }}
 @keyframes titleblur {{
-    0%, 100% {{ filter: blur(0px) drop-shadow(0 0 6px rgba(246,211,101,.35)); }}
-    50%      {{ filter: blur(.7px) drop-shadow(0 0 18px rgba(247,143,179,.65)); }}
+    0%, 100% {{ filter: blur(0px) drop-shadow(0 0 6px rgba(240,176,60,.35)); }}
+    50%      {{ filter: blur(.6px) drop-shadow(0 0 18px rgba(240,176,60,.7)); }}
 }}
 .art-hero p {{
     margin: 6px 0 0 0; color: #FFF8E1; font-size: 1.6rem; line-height: 1.1;
@@ -534,7 +534,7 @@ with st.sidebar:
     st.markdown(
         """
         <div class="welcome">
-            <h2>👋 ¡Bienvenido a tu personalización de tablero!</h2>
+            <h2>👋 ¡Bienvenido a tu tablero personalizado!</h2>
             <p>Elige una categoría para abrirla y ajusta tu pizarra a tu gusto,
             tu temática y tu objetivo de práctica.</p>
         </div>
