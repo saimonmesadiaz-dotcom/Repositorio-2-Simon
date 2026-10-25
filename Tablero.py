@@ -19,7 +19,7 @@ st.set_page_config(
 # =========================================================================
 # DATOS DE CONFIGURACIÓN
 # =========================================================================
-CAFE = "#5B3A1F"        # texto café de contraste
+CAFE = "#3B2108"        # texto café oscuro de alto contraste
 CREMA = "#F7F4EA"       # fondo general
 AMARILLO = "#F4C430"    # barra lateral
 CARD_BG = "#FFF1B0"     # card desplegable (amarillo más claro)
@@ -58,9 +58,9 @@ GROSORES = {
 }
 
 TAMANOS = {
-    "Apaisado (560×370)": (560, 370),
-    "Cuadrado (440×440)": (440, 440),
-    "Panorámico (600×320)": (600, 320),
+    "Apaisado (620×400)": (620, 400),
+    "Cuadrado (460×460)": (460, 460),
+    "Alargado (640×320)": (640, 320),
 }
 
 TEMAS = {
@@ -111,7 +111,7 @@ defaults = {
     "color": "#2D2A26",
     "herramienta": "freedraw",
     "grosor": 5,
-    "tamano": "Apaisado (560×370)",
+    "tamano": "Apaisado (620×400)",
     "tema": "☀️ Playero",
     "guia": "Renglones de Cuaderno",
     "canvas_v": 0,               # sube cuando se limpia el lienzo
@@ -166,11 +166,13 @@ PRIMARY = 'button[kind="primary"], button[data-testid="stBaseButton-primary"]'
 st.markdown(
     f"""
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Caveat:wght@600;700&display=swap');
+
 /* ---------- Fondo general crema ---------- */
 .stApp {{
     background-color: {CREMA};
     color: #2D2A26;
-    font-family: 'Inter', -apple-system, sans-serif;
+    font-family: 'Fredoka', 'Trebuchet MS', sans-serif;
 }}
 [data-testid="stHeader"] {{ background: transparent; }}
 
@@ -184,8 +186,12 @@ st.markdown(
 
 /* ---------- Barra lateral amarilla y ANCHA ---------- */
 [data-testid="stSidebar"][aria-expanded="true"] {{
-    width: 50vw !important;
-    min-width: 50vw !important;
+    width: 47vw !important;
+    min-width: 47vw !important;
+    max-width: 47vw !important;
+}}
+[data-testid="stSidebar"][aria-expanded="true"] > div:first-child {{
+    width: 100% !important;
 }}
 [data-testid="stSidebar"] {{
     background-color: {AMARILLO} !important;
@@ -196,7 +202,8 @@ st.markdown(
 [data-testid="stSidebar"] h3,
 [data-testid="stSidebar"] p,
 [data-testid="stSidebar"] label {{
-    color: #2D2A26;
+    color: #1F1308;
+    font-family: 'Fredoka', sans-serif;
 }}
 
 /* ---------- Bienvenida ---------- */
@@ -208,8 +215,8 @@ st.markdown(
     box-shadow: 5px 5px 0 #2D2A26;
     margin-bottom: 18px;
 }}
-.welcome h2 {{ margin: 0 0 6px 0; font-size: 1.35rem; font-weight: 900; color: #2D2A26; }}
-.welcome p  {{ margin: 0; font-size: .9rem; color: {CAFE}; font-weight: 600; }}
+.welcome h2 {{ margin: 0 0 6px 0; font-size: 1.7rem; font-weight: 700; color: #1F1308; font-family: 'Fredoka', sans-serif; }}
+.welcome p  {{ margin: 0; font-size: 1.35rem; line-height: 1.2; color: {CAFE}; font-weight: 700; font-family: 'Caveat', cursive; }}
 
 /* ---------- Botones base de la barra ---------- */
 [data-testid="stSidebar"] .stButton button {{
@@ -226,7 +233,7 @@ st.markdown(
     box-shadow: 4px 4px 0 {CAFE} !important;
     padding: .55rem 1rem !important;
 }}
-[class*="st-key-cat_"] button p {{ color: {CAFE} !important; font-size: 1.05rem; font-weight: 900; }}
+[class*="st-key-cat_"] button p {{ color: {CAFE} !important; font-size: 1.25rem; font-weight: 700; font-family: 'Fredoka', sans-serif; letter-spacing: .3px; }}
 [class*="st-key-cat_"] button:hover {{
     background: {BOTON_HOVER} !important;
     transform: translate(-1px,-1px);
@@ -257,7 +264,8 @@ st.markdown(
 }}
 .st-key-card_open p, .st-key-card_open label, .st-key-card_open span {{ color: {CAFE} !important; }}
 .card-title {{
-    font-weight: 900; font-size: .95rem; color: {CAFE};
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700; font-size: 1.3rem; color: {CAFE};
     text-decoration: underline; text-underline-offset: 4px;
     margin-bottom: 10px;
 }}
@@ -267,7 +275,7 @@ st.markdown(
     background: #FFFDF7 !important;
     box-shadow: 2px 2px 0 {CAFE} !important;
 }}
-[class*="st-key-opt_"] button p {{ color: {CAFE} !important; }}
+[class*="st-key-opt_"] button p {{ color: {CAFE} !important; font-size: 1.05rem; font-weight: 600; font-family: 'Fredoka', sans-serif; }}
 [class*="st-key-opt_"] button[kind="primary"] p,
 [class*="st-key-opt_"] button[data-testid="stBaseButton-primary"] p {{ color: {CREMA} !important; }}
 [class*="st-key-opt_"] button[kind="primary"],
@@ -291,24 +299,34 @@ st.markdown(
 
 /* ---------- Portada ---------- */
 .art-hero {{
-    background: #FFFDF7;
+    background: #2D2A26;
     padding: 22px 30px;
     border-radius: 16px;
-    box-shadow: 6px 6px 0 #2D2A26;
+    box-shadow: 6px 6px 0 {AMARILLO};
     margin-bottom: 22px;
-    border: 3px solid #2D2A26;
+    border: 3px solid #1F1308;
+    text-align: center;
 }}
-.art-hero h1 {{ margin: 0; font-size: 2.1rem; font-weight: 900; letter-spacing: -.5px; }}
-.art-hero p {{ margin: 8px 0 0 0; color: #6E685F; font-size: 1rem; }}
+.art-hero h1 {{
+    margin: 0; font-size: 2.6rem; font-weight: 700; letter-spacing: 1px;
+    color: #FFC247; font-family: 'Fredoka', sans-serif;
+}}
+.art-hero p {{
+    margin: 6px 0 0 0; color: #FFF8E1; font-size: 1.6rem; line-height: 1.1;
+    font-family: 'Caveat', cursive; font-weight: 700;
+}}
 
 /* ---------- Canvas ---------- */
 .canvas-card {{
     background: #FFFDF7;
-    border: 3px solid #2D2A26;
+    border: 3px solid #1F1308;
     border-radius: 16px;
-    padding: 20px;
-    box-shadow: 8px 8px 0 #2D2A26;
+    padding: 16px;
+    box-shadow: 8px 8px 0 #1F1308;
+    max-width: 100%;
+    margin: 0 auto;
 }}
+.stMain iframe {{ display: block; margin: 0 auto; max-width: 100%; }}
 
 /* Botones del área principal */
 .stMain .stButton button, .stMain .stDownloadButton button {{
@@ -318,7 +336,7 @@ st.markdown(
     font-weight: 800 !important;
     box-shadow: 3px 3px 0 #888 !important;
 }}
-.stMain .stButton button p, .stMain .stDownloadButton button p {{ color: {CREMA} !important; }}
+.stMain .stButton button p, .stMain .stDownloadButton button p {{ color: {CREMA} !important; font-family: 'Fredoka', sans-serif; font-size: 1.1rem; font-weight: 600; }}
 .stMain .stButton button:hover, .stMain .stDownloadButton button:hover {{
     background: {AMARILLO} !important;
     transform: translate(-1px,-1px);
@@ -365,10 +383,10 @@ st.markdown(
         glow calc(var(--t) * .8) ease-in-out var(--d) infinite;
 }}
 .stk.txt {{
-    font-family: 'Comic Sans MS', 'Segoe Print', cursive;
-    font-weight: 900;
+    font-family: 'Caveat', 'Segoe Print', cursive;
+    font-weight: 700;
     color: {CAFE};
-    font-size: calc(var(--s) * .5);
+    font-size: calc(var(--s) * .72);
 }}
 /* Destello que cruza el sticker */
 .stk::after {{
